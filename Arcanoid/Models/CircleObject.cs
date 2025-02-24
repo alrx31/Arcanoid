@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
@@ -8,10 +9,11 @@ public class CircleObject : DisplayObject
 {
     public CircleObject(Canvas canvas) : base(canvas)
     {
+        var size = Random.Shared.Next(30, 70);
         Shape = new Ellipse
         {
-            Width = 50,
-            Height = 50,
+            Width = size,
+            Height = size,
             Fill = GetRandomBrush()
         };
         canvas.Children.Add(Shape);

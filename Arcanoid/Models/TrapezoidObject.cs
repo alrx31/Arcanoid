@@ -1,35 +1,43 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
+using Avalonia.Media;
+using System;
 
-namespace Arcanoid.Models;
-
-public class TrapezoidObject : DisplayObject
+namespace Arcanoid.Models
 {
-    public TrapezoidObject(Canvas canvas) : base(canvas)
+    public class TrapezoidObject : DisplayObject
     {
-        var color = GetRandomBrush();
-        Shape = new Polygon()
+        public TrapezoidObject(Canvas canvas) : base(canvas)
         {
-            Points = new Points
-            {
-                new Point(15, 30),
-                new Point(0, 0),
-                new Point(35, 0),
-                new Point(25, 30)
-            },
-            Fill = color,
-        };
-        Shape.Width = 50;
-        Shape.Height = 50;
-        
-        canvas.Children.Add(Shape);
-        Draw();
-    }
+            var random = new Random();
+            var randomWidth = random.Next(50, 70);  // случайная ширина от 50 до 150
+            var randomHeight = random.Next(30, 70); // случайная высота от 30 до 100
+            var topWidth = randomWidth * 0.6;        // верхняя сторона трапеции меньше нижней
 
-    public override void Draw()
-    {
-        Canvas.SetLeft(Shape, X);
-        Canvas.SetTop(Shape, Y);
+            var color = GetRandomBrush();
+            Shape = new Polygon()
+            {
+                Points = new Points
+                {
+                    new Point((randomWidth - topWidth) / 2, 0),    // Левая вершина верхней стороны
+                    new Point((randomWidth + topWidth) / 2, 0),    // Правая вершина верхней стороны
+                    new Point(randomWidth, randomHeight),          // Правая нижняя вершина
+                    new Point(0, randomHeight)                     // Левая нижняя вершина
+                },
+                Fill = color,
+                Width = randomWidth,
+                Height = randomHeight
+            };
+
+            canvas.Children.Add(Shape);
+            Draw();
+        }
+
+        public override void Draw()
+        {
+            Canvas.SetLeft(Shape, X);
+            Canvas.SetTop(Shape, Y);
+        }
     }
 }
