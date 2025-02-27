@@ -11,19 +11,19 @@ namespace Arcanoid.Models
         public TrapezoidObject(Canvas canvas) : base(canvas)
         {
             var random = new Random();
-            var randomWidth = random.Next(50, 70);  // случайная ширина от 50 до 150
-            var randomHeight = random.Next(30, 70); // случайная высота от 30 до 100
-            var topWidth = randomWidth * 0.6;        // верхняя сторона трапеции меньше нижней
+            var randomWidth = random.Next(50, 70);  
+            var randomHeight = random.Next(30, 70); 
+            var topWidth = randomWidth * 0.6;        
 
             var color = GetRandomBrush();
             Shape = new Polygon()
             {
                 Points = new Points
                 {
-                    new Point((randomWidth - topWidth) / 2, 0),    // Левая вершина верхней стороны
-                    new Point((randomWidth + topWidth) / 2, 0),    // Правая вершина верхней стороны
-                    new Point(randomWidth, randomHeight),          // Правая нижняя вершина
-                    new Point(0, randomHeight)                     // Левая нижняя вершина
+                    new Point((randomWidth - topWidth) / 2, 0),    
+                    new Point((randomWidth + topWidth) / 2, 0),    
+                    new Point(randomWidth, randomHeight),          
+                    new Point(0, randomHeight)                     
                 },
                 Fill = color,
                 Width = randomWidth,
