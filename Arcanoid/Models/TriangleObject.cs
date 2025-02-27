@@ -11,7 +11,7 @@ namespace Arcanoid.Models
         public TriangleShape(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
         {
             var random = new Random();
-            var randomSize = random.Next(30, 100); 
+            var randomSize = random.Next(30, 170); 
 
             var color = GetRandomBrush();
             Shape = new Polygon
@@ -25,7 +25,7 @@ namespace Arcanoid.Models
                 Fill = color,
                 Width = randomSize,
                 Height = randomSize,
-                Stroke = Brushes.White,
+                Stroke = GetRandomBrush(),
                 StrokeThickness = 1
             };
             

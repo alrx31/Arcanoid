@@ -11,8 +11,8 @@ namespace Arcanoid.Models
         public TrapezoidObject(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
         {
             var random = new Random();
-            var randomWidth = random.Next(50, 70);  
-            var randomHeight = random.Next(30, 70); 
+            var randomWidth = random.Next(20, 150);  
+            var randomHeight = random.Next(10, 150); 
             var topWidth = randomWidth * 0.6;        
 
             var color = GetRandomBrush();
@@ -28,7 +28,7 @@ namespace Arcanoid.Models
                 Fill = color,
                 Width = randomWidth,
                 Height = randomHeight,
-                Stroke = Brushes.White,
+                Stroke = GetRandomBrush(),
                 StrokeThickness = 1
             };
 

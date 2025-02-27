@@ -10,15 +10,15 @@ namespace Arcanoid.Models
         public RectangleObject(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
         {
             var random = new Random();
-            var randomWidth = random.Next(30, 50); 
-            var randomHeight = random.Next(30, 50);
+            var randomWidth = random.Next(30, 150); 
+            var randomHeight = random.Next(30, 150);
 
             Shape = new Rectangle
             {
                 Width = randomWidth,
                 Height = randomHeight,
                 Fill = GetRandomBrush(),
-                Stroke = Brushes.White,
+                Stroke = GetRandomBrush(),
                 StrokeThickness = 1
             };
             canvas.Children.Add(Shape);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using Arcanoid.Models;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -35,7 +36,15 @@ namespace Arcanoid
             _mainWindow = window;
             
             _mainWindow.WindowState = WindowState.FullScreen;
+            _mainWindow.Width = 2318;
+            _mainWindow.Height = 1449;
 
+            var border = new Border
+            {
+                BorderBrush = Brushes.White, 
+                BorderThickness = new Thickness(10),
+                Padding = new Thickness(10),
+            };
             
             _stage = new Stage();
             _menuCanvas = new Canvas
@@ -49,15 +58,14 @@ namespace Arcanoid
             _mainGrid = new Grid();
             _mainGrid.Children.Add(_stage.GameCanvas);
             _mainGrid.Children.Add(_menuCanvas);
-
-            _mainWindow.Content = _mainGrid;
+            
+            border.Child = _mainGrid;
+            
+            _mainWindow.Content = border;
             _mainWindow.KeyDown += OnKeyDown;
             
             _maxX = (int)_mainWindow.Width;
             _maxY = (int)_mainWindow.Height;
-
-            
-            Start();
         }
 
         public void Start()

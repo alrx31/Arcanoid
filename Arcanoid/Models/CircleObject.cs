@@ -9,13 +9,13 @@ public class CircleObject : DisplayObject
 {
     public CircleObject(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
     {
-        var size = Random.Shared.Next(30, 70);
+        var size = Random.Shared.Next(30, 170);
         Shape = new Ellipse
         {
             Width = size,
             Height = size,
             Fill = GetRandomBrush(),
-            Stroke = Brushes.White,
+            Stroke = GetRandomBrush(),
             StrokeThickness = 1
         };
         canvas.Children.Add(Shape);
