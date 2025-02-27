@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using Arcanoid.Models;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -7,23 +11,33 @@ namespace Arcanoid
 {
     public class Game
     {
+        private const string SaveFileName = "./../../../save.json";
+        
         private readonly Stage _stage;
         private readonly Window _mainWindow;
         private readonly GameMenu _menu;
         private Grid _mainGrid;
         private Canvas _menuCanvas;
         
-        private bool _isFullScreen = false;
+        private bool _isFullScreen = true;
         private bool _isRunWithoutAcceleration = false;
         
         private bool _isRunWithAcceleration = false;
         private bool _isMenuOpen = false;
+        
+        private int _shapeCount = 10;
+
+        private int _maxX;
+        private int _maxY;
 
         public Game(Window window)
         {
             _mainWindow = window;
-            _stage = new Stage();
+            
+            _mainWindow.WindowState = WindowState.FullScreen;
 
+            
+            _stage = new Stage();
             _menuCanvas = new Canvas
             {
                 Background = Brushes.Transparent,
@@ -38,11 +52,17 @@ namespace Arcanoid
 
             _mainWindow.Content = _mainGrid;
             _mainWindow.KeyDown += OnKeyDown;
+            
+            _maxX = (int)_mainWindow.Width;
+            _maxY = (int)_mainWindow.Height;
+
+            
+            Start();
         }
 
         public void Start()
         {
-            _stage.AddRandomShapes(10);
+            _stage.AddRandomShapes(_shapeCount,(int)_mainWindow.Width,(int)_mainWindow.Height);
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e)
@@ -125,19 +145,42 @@ namespace Arcanoid
             ToggleMenu();
         }
 
-        private void SaveGame()
+
+        public void SaveGame()
         {
+            var shapesData = _stage.GetShapesData();
+            var json = JsonSerializer.Serialize(shapesData, new JsonSerializerOptions { WriteIndented = true });
+    
+            File.WriteAllText(SaveFileName, json);
             Console.WriteLine("Игра сохранена");
         }
 
-        private void LoadGame()
+        public void LoadGame()
         {
-            Console.WriteLine("Игра загружена");
+            if (File.Exists(SaveFileName))
+            {
+                var json = File.ReadAllText(SaveFileName);
+                var shapesData = JsonSerializer.Deserialize<List<ShapeData>>(json);
+                _stage.LoadShapesData(shapesData);
+                Console.WriteLine("Игра загружена");
+            }
+            else
+            {
+                Console.WriteLine("Файл сохранения не найден.");
+            }
         }
+
 
         private void Settings()
         {
-            Console.WriteLine("Открыты настройки");
+            var settingsWindow = new SettingsWindow(_shapeCount, OnShapeCountChanged);
+            settingsWindow.ShowDialog(_mainWindow);
+        }
+
+        private void OnShapeCountChanged(int newCount)
+        {
+            _shapeCount = newCount;
+            Console.WriteLine($"Количество фигур изменено на: {_shapeCount}");
         }
 
         private void Pause()

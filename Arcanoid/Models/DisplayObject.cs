@@ -7,28 +7,26 @@ namespace Arcanoid.Models;
 
 public abstract class DisplayObject
 {
-    protected Shape Shape;
-    protected readonly Canvas Canvas;
-    protected double X, Y;
-    protected double Speed;
-    protected double Angle; 
-    protected double Acceleration;
+    public Shape Shape { get; set; }
+    public Canvas Canvas { get; set; }
+    public double X { get; set; } 
+    public double Y{ get; set; }
+    public double Speed{ get; set; }
+    public double Angle{ get; set; }
+    public double Acceleration{ get; set; }
 
-    public DisplayObject(Canvas canvas)
+    public DisplayObject(Canvas canvas, int _maxX, int _maxY)
     {
         this.Canvas = canvas;
+
         var rand = new Random();
-
-        var canvasWidth = canvas.Bounds.Width > 0 ? canvas.Bounds.Width : 500;  
-        var canvasHeight = canvas.Bounds.Height > 0 ? canvas.Bounds.Height : 500;
-
-        X = rand.Next(0, (int)canvasWidth - 100);
-        Y = rand.Next(0, (int)canvasHeight - 100);
-        Speed = rand.Next(100, 200) / 100.0;
+        
+        X = rand.Next(50, _maxX - 100);
+        Y = rand.Next(50, _maxY - 100);
+        Speed = rand.Next(1, 10);
         Angle = rand.NextDouble() * 2 * Math.PI;
     }
-
-
+    
     public void StartMovement(double acceleration)
     {
         Acceleration = acceleration;

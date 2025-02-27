@@ -8,7 +8,7 @@ namespace Arcanoid.Models
 {
     public class TriangleShape : DisplayObject
     {
-        public TriangleShape(Canvas canvas) : base(canvas)
+        public TriangleShape(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
         {
             var random = new Random();
             var randomSize = random.Next(30, 100); 
@@ -24,7 +24,9 @@ namespace Arcanoid.Models
                 },
                 Fill = color,
                 Width = randomSize,
-                Height = randomSize
+                Height = randomSize,
+                Stroke = Brushes.White,
+                StrokeThickness = 1
             };
             
             canvas.Children.Add(Shape);

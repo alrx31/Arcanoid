@@ -8,7 +8,7 @@ namespace Arcanoid.Models
 {
     public class TrapezoidObject : DisplayObject
     {
-        public TrapezoidObject(Canvas canvas) : base(canvas)
+        public TrapezoidObject(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
         {
             var random = new Random();
             var randomWidth = random.Next(50, 70);  
@@ -27,7 +27,9 @@ namespace Arcanoid.Models
                 },
                 Fill = color,
                 Width = randomWidth,
-                Height = randomHeight
+                Height = randomHeight,
+                Stroke = Brushes.White,
+                StrokeThickness = 1
             };
 
             canvas.Children.Add(Shape);
