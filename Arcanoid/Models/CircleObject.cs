@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
@@ -10,7 +11,7 @@ public class CircleObject : DisplayObject
     public CircleObject(Canvas canvas,
         int _maxX,
         int _maxY,
-        int size,
+        List<int> size,
         byte R1,
         byte G1,
         byte B1,
@@ -34,8 +35,8 @@ public class CircleObject : DisplayObject
         
         Shape = new Ellipse
         {
-            Width = size,
-            Height = size,
+            Width = size[0],
+            Height = size[0],
             Fill = new SolidColorBrush(Color.FromRgb(R1,G1,B1)),
             Stroke = new SolidColorBrush(Color.FromRgb(R2,G2,B2)),
             StrokeThickness = 1

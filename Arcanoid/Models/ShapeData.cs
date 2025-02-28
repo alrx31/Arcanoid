@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Arcanoid.Models;
 
 
@@ -7,9 +9,10 @@ public class ShapeData
     public int X { get; set; }
     public int Y { get; set; }
     public double Speed { get; set; }
-    public double Angle { get; set; }
+    public double AngleSpeed { get; set; }
+    public double AngleAcceleration { get; set; }
     public double Acceleration { get; set; }
-    public int Size { get; set; }
+    public List<int> Size { get; set; }
     
     public byte R1 { get; set; }
     public byte G1 { get; set; }

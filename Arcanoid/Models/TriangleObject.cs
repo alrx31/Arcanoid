@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using System;
+using System.Collections.Generic;
 
 namespace Arcanoid.Models
 {
@@ -11,7 +12,7 @@ namespace Arcanoid.Models
         public TriangleShape(Canvas canvas,
             int _maxX,
             int _maxY,
-            int size,
+            List<int> size,
             byte R1,
             byte G1,
             byte B1,
@@ -37,13 +38,13 @@ namespace Arcanoid.Models
             {
                 Points = new Points
                 {
-                    new Point(0, randomSize),  
-                    new Point(randomSize / 2, 0),   
-                    new Point(randomSize, randomSize)
+                    new Point(0, size[0]),  
+                    new Point(size[1], 0),   
+                    new Point(size[2], size[0])
                 },
                 Fill = new SolidColorBrush(Color.FromRgb(R1,G1,B1)),
-                Width = randomSize,
-                Height = randomSize,
+                Width = size[0],
+                Height = size[1],
                 Stroke = new SolidColorBrush(Color.FromRgb(R2,G2,B2)),
                 StrokeThickness = 1
             };

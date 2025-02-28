@@ -41,7 +41,7 @@ namespace Arcanoid
                     GameCanvas,
                     _maxX,
                     _maxY,
-                    random.Next(20,150),
+                    new List<int>{random.Next(20,150)},
                     R1, G1, B1, R2, G2, B2
                     ));
                 
@@ -53,7 +53,7 @@ namespace Arcanoid
                     GameCanvas,
                     _maxX,
                     _maxY,
-                    random.Next(20,150),
+                    new List<int>{random.Next(20,150),random.Next(20,150)},
                     R1, G1, B1, R2, G2, B2
                     ));
                 
@@ -64,7 +64,7 @@ namespace Arcanoid
                     GameCanvas,
                     _maxX,
                     _maxY,
-                    random.Next(20,70),
+                    new List<int>{random.Next(20,70),random.Next(20,70),random.Next(20,70)},
                     R1, G1, B1, R2, G2, B2
                     ));
                 
@@ -75,17 +75,17 @@ namespace Arcanoid
                     GameCanvas,
                     _maxX,
                     _maxY,
-                    random.Next(20,150),
+                    new List<int>{random.Next(20,70),random.Next(20,70),random.Next(20,70)},
                     R1, G1, B1, R2, G2, B2
                     ));
             }
         }
 
-        public void StartMovement(double acceleration)
+        public void StartMovement(byte acc)
         {
             foreach (var shape in _shapes)
             {
-                shape.StartMovement(acceleration);
+                shape.StartMovement(acc);
             }
             _timer.Start();
         }
@@ -128,7 +128,7 @@ namespace Arcanoid
                     X = (int)shape.X,
                     Y = (int)shape.Y,
                     Speed = shape.Speed,
-                    Angle = shape.Angle,
+                    AngleSpeed = shape.AngleSpeed,
                     Acceleration = shape.Acceleration,
                     R1 = shape.r1,
                     G1 = shape.g1,
@@ -170,7 +170,7 @@ namespace Arcanoid
                             X = data.X,
                             Y = data.Y,
                             Speed = data.Speed,
-                            Angle = data.Angle,
+                            AngleSpeed = data.AngleSpeed,
                             Acceleration = data.Acceleration
                         };
                         break;
@@ -180,7 +180,7 @@ namespace Arcanoid
                             X = data.X,
                             Y = data.Y,
                             Speed = data.Speed,
-                            Angle = data.Angle,
+                            AngleSpeed = data.AngleSpeed,
                             Acceleration = data.Acceleration
                         };
                         break;
@@ -190,7 +190,7 @@ namespace Arcanoid
                             X = data.X,
                             Y = data.Y,
                             Speed = data.Speed,
-                            Angle = data.Angle,
+                            AngleSpeed = data.AngleSpeed,
                             Acceleration = data.Acceleration
                         };
                         break;
@@ -200,7 +200,7 @@ namespace Arcanoid
                             X = data.X,
                             Y = data.Y,
                             Speed = data.Speed,
-                            Angle = data.Angle,
+                            AngleSpeed = data.AngleSpeed,
                             Acceleration = data.Acceleration
                         };
                         break;
@@ -211,7 +211,7 @@ namespace Arcanoid
                     shape.X = data.X;
                     shape.Y = data.Y;
                     shape.Speed = data.Speed;
-                    shape.Angle = data.Angle;
+                    shape.AngleSpeed = data.AngleSpeed;
                     shape.Acceleration = data.Acceleration;
                     shape.Draw();
                     _shapes.Add(shape);

@@ -12,7 +12,7 @@ namespace Arcanoid
 {
     public class Game
     {
-        private const string SaveFileName = "./../../../save.json";
+        private const string SaveFileName = "save.json";
         
         private readonly Stage _stage;
         private readonly Window _mainWindow;
@@ -81,6 +81,9 @@ namespace Arcanoid
             }
             else if (e.Key == Key.M) 
             {
+                _stage.StopMovement();
+                _isRunWithAcceleration = false;
+                _isRunWithoutAcceleration = false;
                 ToggleMenu();
             }
             else if (!_isMenuOpen) 
@@ -109,7 +112,7 @@ namespace Arcanoid
                     }
                     else
                     {
-                        _stage.StartMovement(new Random().NextDouble());
+                        _stage.StartMovement(1);
                         _isRunWithoutAcceleration = true;
                     }
                 }
@@ -154,27 +157,62 @@ namespace Arcanoid
         }
 
 
-        public void SaveGame()
+        public async void SaveGame()
         {
-            var shapesData = _stage.GetShapesData();
-            var json = JsonSerializer.Serialize(shapesData, new JsonSerializerOptions { WriteIndented = true });
-    
-            File.WriteAllText(SaveFileName, json);
-            Console.WriteLine("Игра сохранена");
-        }
-
-        public void LoadGame()
-        {
-            if (File.Exists(SaveFileName))
+            var dialog = new SaveFileDialog()
             {
-                var json = File.ReadAllText(SaveFileName);
-                var shapesData = JsonSerializer.Deserialize<List<ShapeData>>(json);
-                _stage.LoadShapesData(shapesData);
-                Console.WriteLine("Игра загружена");
+                Title = "Сохранение игры",
+                DefaultExtension = "json",
+                InitialFileName = SaveFileName,
+                Filters = new List<FileDialogFilter>
+                {
+                    new FileDialogFilter { Name = "JSON Files", Extensions = { "json" } }
+                }
+            };
+            var result = await dialog.ShowAsync(_mainWindow);
+            if (!string.IsNullOrEmpty(result))
+            {
+                var shapesData = _stage.GetShapesData();
+                var json = JsonSerializer.Serialize(shapesData, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(result, json);
+                Console.WriteLine("Игра сохранена: " + result);
             }
             else
             {
-                Console.WriteLine("Файл сохранения не найден.");
+                Console.WriteLine("Сохранение отменено.");
+            }
+        }
+
+        public async void LoadGame()
+        {var dialog = new OpenFileDialog
+            {
+                Title = "Загрузка игры",
+                AllowMultiple = false,
+                Filters = new List<FileDialogFilter>
+                {
+                    new FileDialogFilter { Name = "JSON Files", Extensions = { "json" } }
+                }
+            };
+
+            var result = await dialog.ShowAsync(_mainWindow);
+            if (result != null && result.Length > 0)
+            {
+                var filePath = result[0];
+                if (File.Exists(filePath))
+                {
+                    var json = File.ReadAllText(filePath);
+                    var shapesData = JsonSerializer.Deserialize<List<ShapeData>>(json);
+                    _stage.LoadShapesData(shapesData);
+                    Console.WriteLine("Игра загружена: " + filePath);
+                }
+                else
+                {
+                    Console.WriteLine("Файл не найден.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Загрузка отменена.");
             }
         }
 

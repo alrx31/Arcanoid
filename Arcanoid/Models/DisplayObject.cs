@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
@@ -12,11 +13,12 @@ public abstract class DisplayObject
     public double X { get; set; } 
     public double Y{ get; set; }
     public double Speed{ get; set; }
-    public double Angle{ get; set; }
+    public double AngleSpeed{ get; set; }
     public double Acceleration{ get; set; }
+    public double AngleAcceleration{ get; set; }
     
     public byte r1,g1,b1,r2,g2,b2;
-    public int size { get; set; }
+    public List<int> size { get; set; }
 
     public DisplayObject(Canvas canvas, int _maxX, int _maxY)
     {
@@ -27,7 +29,8 @@ public abstract class DisplayObject
         X = rand.Next(50, _maxX - 100);
         Y = rand.Next(50, _maxY - 100);
         Speed = rand.Next(1, 10);
-        Angle = rand.NextDouble() * 2 * Math.PI;
+        AngleSpeed = rand.NextDouble() * 2 * Math.PI;
+        AngleAcceleration = rand.NextDouble() * 2 * Math.PI;
     }
     
     public void StartMovement(double acceleration)
@@ -37,18 +40,33 @@ public abstract class DisplayObject
 
     public void Move()
     {
-        X += Speed * Math.Cos(Angle);
-        Y += Speed * Math.Sin(Angle);
+        double speedX = Speed * Math.Cos(AngleSpeed);
+        double speedY = Speed * Math.Sin(AngleSpeed);
 
-        Speed += Acceleration;
+        double accelerationX = Acceleration * Math.Cos(AngleAcceleration);
+        double accelerationY = Acceleration * Math.Sin(AngleAcceleration);
 
-        if (X < -Shape.Width/2 || X > Canvas.Bounds.Width - Shape.Width/2)
+        X += speedX;
+        Y += speedY;
+
+        speedX += accelerationX;
+        speedY += accelerationY;
+
+        Speed = Math.Sqrt(speedX * speedX + speedY * speedY);
+
+        AngleSpeed = Math.Atan2(speedY, speedX);
+
+        if (X <= 0 || X >= Canvas.Bounds.Width - Shape.Width)
         {
-            Angle = Math.PI - Angle; 
+            AngleSpeed = Math.PI - AngleSpeed; 
+            X = Math.Max(0, Math.Min(X, Canvas.Bounds.Width - Shape.Width));
+            Speed *= 0.9;
         }
-        if (Y < -Shape.Height/2 || Y > Canvas.Bounds.Height - Shape.Height/2)
+        if (Y <= 0 || Y >= Canvas.Bounds.Height - Shape.Height)
         {
-            Angle = -Angle;
+            AngleSpeed = -AngleSpeed;
+            Y = Math.Max(0, Math.Min(Y, Canvas.Bounds.Height - Shape.Height)); 
+            Speed *= 0.9;
         }
 
         Canvas.SetLeft(Shape, X);
@@ -56,4 +74,5 @@ public abstract class DisplayObject
     }
 
     public abstract void Draw();
+
 }

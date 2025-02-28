@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using System;
+using System.Collections.Generic;
 
 namespace Arcanoid.Models
 {
@@ -10,7 +11,7 @@ namespace Arcanoid.Models
         public RectangleObject(Canvas canvas,
             int _maxX,
             int _maxY,
-            int size,
+            List<int> size,
             byte R1,
             byte G1,
             byte B1,
@@ -30,8 +31,8 @@ namespace Arcanoid.Models
             this.g2 = G2;
             this.b2 = B2;
             
-            var randomWidth = size;
-            var randomHeight = randomWidth * 0.6;
+            var randomWidth = size[0];
+            var randomHeight = size[1];
 
             Shape = new Rectangle
             {
