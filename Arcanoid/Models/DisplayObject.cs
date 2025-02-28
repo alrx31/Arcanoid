@@ -14,6 +14,9 @@ public abstract class DisplayObject
     public double Speed{ get; set; }
     public double Angle{ get; set; }
     public double Acceleration{ get; set; }
+    
+    public byte r1,g1,b1,r2,g2,b2;
+    public int size { get; set; }
 
     public DisplayObject(Canvas canvas, int _maxX, int _maxY)
     {
@@ -50,16 +53,6 @@ public abstract class DisplayObject
 
         Canvas.SetLeft(Shape, X);
         Canvas.SetTop(Shape, Y);
-    }
-
-    protected Brush GetRandomBrush()
-    {
-        Random rand = new Random();
-        byte r = (byte)rand.Next(256);
-        byte g = (byte)rand.Next(256);
-        byte b = (byte)rand.Next(256);
-
-        return new SolidColorBrush(Color.FromRgb(r, g, b));
     }
 
     public abstract void Draw();

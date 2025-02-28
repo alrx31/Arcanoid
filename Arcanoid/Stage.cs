@@ -29,13 +29,55 @@ namespace Arcanoid
 
         public void AddRandomShapes(int count, int _maxX, int _maxY)
         {
+            var random = new Random();
             Console.WriteLine(_maxX + " - " + _maxY);
+            
             for (int i = 0; i < count; i++)
             {
-                _shapes.Add(new CircleObject(GameCanvas,_maxX,_maxY));
-                _shapes.Add(new RectangleObject(GameCanvas,_maxX,_maxY));
-                _shapes.Add(new TriangleShape(GameCanvas,_maxX,_maxY));
-                _shapes.Add(new TrapezoidObject(GameCanvas,_maxX,_maxY));
+                var (R1, G1, B1) = GetRandomBrush();
+                var (R2, G2, B2) = GetRandomBrush();
+                
+                _shapes.Add(new CircleObject(
+                    GameCanvas,
+                    _maxX,
+                    _maxY,
+                    random.Next(20,150),
+                    R1, G1, B1, R2, G2, B2
+                    ));
+                
+                (R1, G1, B1) = GetRandomBrush();
+                (R2, G2, B2) = GetRandomBrush();
+
+                
+                _shapes.Add(new RectangleObject(
+                    GameCanvas,
+                    _maxX,
+                    _maxY,
+                    random.Next(20,150),
+                    R1, G1, B1, R2, G2, B2
+                    ));
+                
+                (R1, G1, B1) = GetRandomBrush();
+                (R2, G2, B2) = GetRandomBrush();
+
+                _shapes.Add(new TriangleShape(
+                    GameCanvas,
+                    _maxX,
+                    _maxY,
+                    random.Next(20,70),
+                    R1, G1, B1, R2, G2, B2
+                    ));
+                
+                (R1, G1, B1) = GetRandomBrush();
+                (R2, G2, B2) = GetRandomBrush();
+
+                _shapes.Add(new TrapezoidObject(
+                    GameCanvas,
+                    _maxX,
+                    _maxY,
+                    random.Next(20,150),
+                    R1, G1, B1, R2, G2, B2
+                    ));
             }
         }
 
@@ -83,11 +125,18 @@ namespace Arcanoid
                 var data = new ShapeData
                 {
                     ShapeType = shape.GetType().Name,
-                    X = shape.X,
-                    Y = shape.Y,
+                    X = (int)shape.X,
+                    Y = (int)shape.Y,
                     Speed = shape.Speed,
                     Angle = shape.Angle,
                     Acceleration = shape.Acceleration,
+                    R1 = shape.r1,
+                    G1 = shape.g1,
+                    B1 = shape.b1,
+                    R2 = shape.r2,
+                    G2 = shape.g2,
+                    B2 = shape.b2,
+                    Size = shape.size
                 };
                 shapesData.Add(data);
             }
@@ -103,10 +152,20 @@ namespace Arcanoid
             {
                 DisplayObject shape = null;
 
+                byte r1, g1, b1;
+                byte r2, g2, b2;
+
+                r1 = data.R1;
+                g1 = data.G1;
+                b1 = data.B1;
+                r2 = data.R2;
+                g2 = data.G2;
+                b2 = data.B2;
+
                 switch (data.ShapeType)
                 {
                     case "CircleObject":
-                        shape = new CircleObject(GameCanvas,800,800)
+                        shape = new CircleObject(GameCanvas,800,800,data.Size,r1,g1,b1,r2,g2,b2)
                         {
                             X = data.X,
                             Y = data.Y,
@@ -116,7 +175,7 @@ namespace Arcanoid
                         };
                         break;
                     case "RectangleObject":
-                        shape = new RectangleObject(GameCanvas,800,800)
+                        shape = new RectangleObject(GameCanvas,800,800,data.Size, r1,g1,b1,r2,g2,b2)
                         {
                             X = data.X,
                             Y = data.Y,
@@ -126,7 +185,7 @@ namespace Arcanoid
                         };
                         break;
                     case "TriangleShape":
-                        shape = new TriangleShape(GameCanvas,900,900)
+                        shape = new TriangleShape(GameCanvas,900,900,data.Size, r1,g1,b1,r2,g2,b2)
                         {
                             X = data.X,
                             Y = data.Y,
@@ -136,7 +195,7 @@ namespace Arcanoid
                         };
                         break;
                     case "TrapezoidObject":
-                        shape = new TrapezoidObject(GameCanvas,900,900)
+                        shape = new TrapezoidObject(GameCanvas,900,900,data.Size, r1,g1,b1,r2,g2,b2)
                         {
                             X = data.X,
                             Y = data.Y,
@@ -160,5 +219,15 @@ namespace Arcanoid
             }
         }
 
+        
+        public static (byte,byte,byte) GetRandomBrush()
+        {
+            Random rand = new Random();
+            byte r = (byte)rand.Next(256);
+            byte g = (byte)rand.Next(256);
+            byte b = (byte)rand.Next(256);
+
+            return (r,g,b);
+        }
     }
 }

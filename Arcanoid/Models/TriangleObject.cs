@@ -8,12 +8,31 @@ namespace Arcanoid.Models
 {
     public class TriangleShape : DisplayObject
     {
-        public TriangleShape(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
+        public TriangleShape(Canvas canvas,
+            int _maxX,
+            int _maxY,
+            int size,
+            byte R1,
+            byte G1,
+            byte B1,
+            byte R2,
+            byte G2,
+            byte B2
+            ) : base(canvas,
+            _maxX,
+            _maxY)
         {
-            var random = new Random();
-            var randomSize = random.Next(30, 170); 
+            var randomSize = size; 
+            
+            this.size = size;
+            this.r1 = R1;
+            this.g1 = G1;
+            this.b1 = B1;
 
-            var color = GetRandomBrush();
+            this.r2 = R2;
+            this.g2 = G2;
+            this.b2 = B2;
+            
             Shape = new Polygon
             {
                 Points = new Points
@@ -22,10 +41,10 @@ namespace Arcanoid.Models
                     new Point(randomSize / 2, 0),   
                     new Point(randomSize, randomSize)
                 },
-                Fill = color,
+                Fill = new SolidColorBrush(Color.FromRgb(R1,G1,B1)),
                 Width = randomSize,
                 Height = randomSize,
-                Stroke = GetRandomBrush(),
+                Stroke = new SolidColorBrush(Color.FromRgb(R2,G2,B2)),
                 StrokeThickness = 1
             };
             

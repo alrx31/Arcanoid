@@ -8,14 +8,34 @@ namespace Arcanoid.Models
 {
     public class TrapezoidObject : DisplayObject
     {
-        public TrapezoidObject(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
+        public TrapezoidObject(Canvas canvas,
+            int _maxX,
+            int _maxY,
+            int size,
+            byte R1,
+            byte G1,
+            byte B1,
+            byte R2,
+            byte G2,
+            byte B2
+            
+            ) : base(canvas,
+            _maxX,
+            _maxY)
         {
-            var random = new Random();
-            var randomWidth = random.Next(20, 150);  
-            var randomHeight = random.Next(10, 150); 
+            this.size = size;
+            this.r1 = R1;
+            this.g1 = G1;
+            this.b1 = B1;
+
+            this.r2 = R2;
+            this.g2 = G2;
+            this.b2 = B2;
+            
+            var randomWidth = size;
+            var randomHeight = randomWidth; 
             var topWidth = randomWidth * 0.6;        
 
-            var color = GetRandomBrush();
             Shape = new Polygon()
             {
                 Points = new Points
@@ -25,10 +45,10 @@ namespace Arcanoid.Models
                     new Point(randomWidth, randomHeight),          
                     new Point(0, randomHeight)                     
                 },
-                Fill = color,
+                Fill = new SolidColorBrush(Color.FromRgb(r1,g1,b1)),
                 Width = randomWidth,
                 Height = randomHeight,
-                Stroke = GetRandomBrush(),
+                Stroke = new SolidColorBrush(Color.FromRgb(r2,g2,b2)),
                 StrokeThickness = 1
             };
 

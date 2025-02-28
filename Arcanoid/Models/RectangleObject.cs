@@ -7,18 +7,38 @@ namespace Arcanoid.Models
 {
     public class RectangleObject : DisplayObject
     {
-        public RectangleObject(Canvas canvas,int _maxX, int _maxY) : base(canvas,_maxX,_maxY)
+        public RectangleObject(Canvas canvas,
+            int _maxX,
+            int _maxY,
+            int size,
+            byte R1,
+            byte G1,
+            byte B1,
+            byte R2,
+            byte G2,
+            byte B2
+            ) : base(canvas,
+            _maxX,
+            _maxY)
         {
-            var random = new Random();
-            var randomWidth = random.Next(30, 150); 
-            var randomHeight = random.Next(30, 150);
+            this.size = size;
+            this.r1 = R1;
+            this.g1 = G1;
+            this.b1 = B1;
+
+            this.r2 = R2;
+            this.g2 = G2;
+            this.b2 = B2;
+            
+            var randomWidth = size;
+            var randomHeight = randomWidth * 0.6;
 
             Shape = new Rectangle
             {
                 Width = randomWidth,
                 Height = randomHeight,
-                Fill = GetRandomBrush(),
-                Stroke = GetRandomBrush(),
+                Fill = new SolidColorBrush(Color.FromRgb(R1,G1,B1)),
+                Stroke = new SolidColorBrush(Color.FromRgb(R2,G2,B2)),
                 StrokeThickness = 1
             };
             canvas.Children.Add(Shape);
