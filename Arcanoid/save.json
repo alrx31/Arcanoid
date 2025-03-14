@@ -1,0 +1,362 @@
+[
+  {
+    "ShapeType": "CircleObject",
+    "X": 179,
+    "Y": 534,
+    "Speed": 10.007285920984252,
+    "AngleSpeed": -0.7600982031325126,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      74
+    ],
+    "R1": 15,
+    "G1": 125,
+    "B1": 115,
+    "R2": 62,
+    "G2": 93,
+    "B2": 130
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 5,
+    "Y": 997,
+    "Speed": 1.6645679606458528,
+    "AngleSpeed": 0.18656089204183396,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      74
+    ],
+    "R1": 83,
+    "G1": 146,
+    "B1": 78,
+    "R2": 8,
+    "G2": 35,
+    "B2": 173
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 1784,
+    "Y": 832,
+    "Speed": 24.462764347567884,
+    "AngleSpeed": -0.7399631321355269,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      60
+    ],
+    "R1": 101,
+    "G1": 23,
+    "B1": 124,
+    "R2": 229,
+    "G2": 123,
+    "B2": 124
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 128,
+    "Y": 1068,
+    "Speed": 3.8494068711888594,
+    "AngleSpeed": -1.987821582476749,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      58
+    ],
+    "R1": 14,
+    "G1": 79,
+    "B1": 197,
+    "R2": 103,
+    "G2": 88,
+    "B2": 197
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 482,
+    "Y": 898,
+    "Speed": 7.489846120101036,
+    "AngleSpeed": -1.338819201799785,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      97
+    ],
+    "R1": 22,
+    "G1": 233,
+    "B1": 238,
+    "R2": 184,
+    "G2": 168,
+    "B2": 4
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 196,
+    "Y": 278,
+    "Speed": 12.225479994392176,
+    "AngleSpeed": -0.2580130172178942,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      95
+    ],
+    "R1": 111,
+    "G1": 118,
+    "B1": 225,
+    "R2": 12,
+    "G2": 11,
+    "B2": 48
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 116,
+    "Y": 71,
+    "Speed": 11.460761413673401,
+    "AngleSpeed": -1.624109006405939,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      96
+    ],
+    "R1": 239,
+    "G1": 129,
+    "B1": 116,
+    "R2": 106,
+    "G2": 88,
+    "B2": 232
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 1413,
+    "Y": 1062,
+    "Speed": 10.164016620624233,
+    "AngleSpeed": -1.9898889616938438,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      98
+    ],
+    "R1": 212,
+    "G1": 186,
+    "B1": 29,
+    "R2": 73,
+    "G2": 208,
+    "B2": 217
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 68,
+    "Y": 829,
+    "Speed": 8.432283205370581,
+    "AngleSpeed": -1.2161568591698837,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      71
+    ],
+    "R1": 40,
+    "G1": 170,
+    "B1": 119,
+    "R2": 23,
+    "G2": 108,
+    "B2": 168
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 544,
+    "Y": 251,
+    "Speed": 22.65176822968273,
+    "AngleSpeed": -0.809124242162167,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      90
+    ],
+    "R1": 163,
+    "G1": 134,
+    "B1": 120,
+    "R2": 151,
+    "G2": 248,
+    "B2": 96
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 21,
+    "Y": 107,
+    "Speed": 8.629327901143597,
+    "AngleSpeed": -0.8527109078704845,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      80
+    ],
+    "R1": 146,
+    "G1": 100,
+    "B1": 120,
+    "R2": 244,
+    "G2": 152,
+    "B2": 38
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 24,
+    "Y": 553,
+    "Speed": 8.5087595203674,
+    "AngleSpeed": 1.6638893146993479,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      87
+    ],
+    "R1": 240,
+    "G1": 80,
+    "B1": 188,
+    "R2": 149,
+    "G2": 33,
+    "B2": 252
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 1570,
+    "Y": 986,
+    "Speed": 12.648202756118273,
+    "AngleSpeed": 0.891587615626276,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      83
+    ],
+    "R1": 63,
+    "G1": 253,
+    "B1": 44,
+    "R2": 105,
+    "G2": 48,
+    "B2": 187
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 1752,
+    "Y": 363,
+    "Speed": 13.871000411216949,
+    "AngleSpeed": 0.928656988644077,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      60
+    ],
+    "R1": 69,
+    "G1": 173,
+    "B1": 169,
+    "R2": 55,
+    "G2": 97,
+    "B2": 202
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 24,
+    "Y": 336,
+    "Speed": 16.039632134084947,
+    "AngleSpeed": 0.8439019622491958,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      95
+    ],
+    "R1": 216,
+    "G1": 255,
+    "B1": 234,
+    "R2": 175,
+    "G2": 225,
+    "B2": 19
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 1329,
+    "Y": 43,
+    "Speed": 21.83443944033445,
+    "AngleSpeed": 1.1690066183028343,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      68
+    ],
+    "R1": 188,
+    "G1": 98,
+    "B1": 74,
+    "R2": 240,
+    "G2": 232,
+    "B2": 165
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 391,
+    "Y": 347,
+    "Speed": 5.989359850484659,
+    "AngleSpeed": -0.8570402417121313,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      71
+    ],
+    "R1": 169,
+    "G1": 66,
+    "B1": 162,
+    "R2": 116,
+    "G2": 235,
+    "B2": 71
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 1343,
+    "Y": 1007,
+    "Speed": 17.881811395258044,
+    "AngleSpeed": 2.02057751436809,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      80
+    ],
+    "R1": 35,
+    "G1": 191,
+    "B1": 63,
+    "R2": 133,
+    "G2": 151,
+    "B2": 113
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 196,
+    "Y": 998,
+    "Speed": 7.782989221293987,
+    "AngleSpeed": 0.2796890168881822,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      66
+    ],
+    "R1": 29,
+    "G1": 191,
+    "B1": 251,
+    "R2": 123,
+    "G2": 57,
+    "B2": 207
+  },
+  {
+    "ShapeType": "CircleObject",
+    "X": 1789,
+    "Y": 57,
+    "Speed": 4.853462820526908,
+    "AngleSpeed": 2.6710535362573866,
+    "AngleAcceleration": 0,
+    "Acceleration": 1,
+    "Size": [
+      72
+    ],
+    "R1": 17,
+    "G1": 29,
+    "B1": 176,
+    "R2": 146,
+    "G2": 162,
+    "B2": 203
+  }
+]

@@ -26,7 +26,7 @@ namespace Arcanoid
         private bool _isRunWithAcceleration = false;
         private bool _isMenuOpen = false;
         
-        private int _shapeCount = 10;
+        private int _shapeCount = 20;
 
         private int _maxX;
         private int _maxY;
@@ -138,13 +138,11 @@ namespace Arcanoid
             {
                 _menuCanvas.IsHitTestVisible = false;
                 _menuCanvas.Children.Clear(); 
-                _stage.RemoveBlurEffect(); 
             }
             else
             {
                 _menu.DrawMenu(); 
                 _menuCanvas.IsHitTestVisible = true;
-                _stage.ApplyBlurEffect();
             }
             _isMenuOpen = !_isMenuOpen;
         }

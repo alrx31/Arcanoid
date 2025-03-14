@@ -25,7 +25,7 @@ namespace Arcanoid.Models
         {
             var randomSize = size; 
             
-            this.size = size;
+            this.Size = size;
             this.r1 = R1;
             this.g1 = G1;
             this.b1 = B1;
@@ -38,9 +38,9 @@ namespace Arcanoid.Models
             {
                 Points = new Points
                 {
-                    new Point(0, size[0]),  
-                    new Point(size[1], 0),   
-                    new Point(size[2], size[0])
+                    new Point(size[0], size[1]),  
+                    new Point(size[2], size[3]),   
+                    new Point(size[4], size[5])
                 },
                 Fill = new SolidColorBrush(Color.FromRgb(R1,G1,B1)),
                 Width = size[0],

@@ -9,8 +9,9 @@ namespace Arcanoid.Models;
 public abstract class DisplayObject
 {
     public Shape Shape { get; set; }
+    public Rectangle hitBoxShape;
     public Canvas Canvas { get; set; }
-    public double X { get; set; } 
+    public double X { get; set; }
     public double Y{ get; set; }
     public double Speed{ get; set; }
     public double AngleSpeed{ get; set; }
@@ -18,14 +19,14 @@ public abstract class DisplayObject
     public double AngleAcceleration{ get; set; }
     
     public byte r1,g1,b1,r2,g2,b2;
-    public List<int> size { get; set; }
+    public List<int> Size { get; set; }
 
     public DisplayObject(Canvas canvas, int _maxX, int _maxY)
     {
         this.Canvas = canvas;
 
         var rand = new Random();
-        
+
         X = rand.Next(50, _maxX - 100);
         Y = rand.Next(50, _maxY - 100);
         Speed = rand.Next(1, 10);
@@ -60,17 +61,20 @@ public abstract class DisplayObject
         {
             AngleSpeed = Math.PI - AngleSpeed; 
             X = Math.Max(0, Math.Min(X, Canvas.Bounds.Width - Shape.Width));
-            Speed *= 0.9;
+            //Speed *= 0.9;
         }
         if (Y <= 0 || Y >= Canvas.Bounds.Height - Shape.Height)
         {
             AngleSpeed = -AngleSpeed;
-            Y = Math.Max(0, Math.Min(Y, Canvas.Bounds.Height - Shape.Height)); 
-            Speed *= 0.9;
+            Y = Math.Max(0, Math.Min(Y, Canvas.Bounds.Height - Shape.Height));
+            //Speed *= 0.9;
         }
 
         Canvas.SetLeft(Shape, X);
         Canvas.SetTop(Shape, Y);
+        
+        //Canvas.SetLeft(hitBoxShape, X);
+        //Canvas.SetTop(hitBoxShape, Y);
     }
 
     public abstract void Draw();

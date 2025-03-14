@@ -22,7 +22,7 @@ namespace Arcanoid.Models
             _maxX,
             _maxY)
         {
-            this.size = size;
+            this.Size = size;
             this.r1 = R1;
             this.g1 = G1;
             this.b1 = B1;
