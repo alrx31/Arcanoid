@@ -61,13 +61,13 @@ public abstract class DisplayObject
         {
             AngleSpeed = Math.PI - AngleSpeed; 
             X = Math.Max(0, Math.Min(X, Canvas.Bounds.Width - Shape.Width));
-            //Speed *= 0.9;
+            //Speed *= 0.95;
         }
         if (Y <= 0 || Y >= Canvas.Bounds.Height - Shape.Height)
         {
             AngleSpeed = -AngleSpeed;
             Y = Math.Max(0, Math.Min(Y, Canvas.Bounds.Height - Shape.Height));
-            //Speed *= 0.9;
+            //Speed *= 0.95;
         }
 
         Canvas.SetLeft(Shape, X);
@@ -78,5 +78,4 @@ public abstract class DisplayObject
     }
 
     public abstract void Draw();
-
 }

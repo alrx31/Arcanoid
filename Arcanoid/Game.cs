@@ -21,15 +21,12 @@ namespace Arcanoid
         private Canvas _menuCanvas;
         
         private bool _isFullScreen = true;
-        private bool _isRunWithoutAcceleration = false;
+        private bool _isRunWithoutAcceleration;
         
-        private bool _isRunWithAcceleration = false;
-        private bool _isMenuOpen = false;
+        private bool _isRunWithAcceleration;
+        private bool _isMenuOpen;
         
         private int _shapeCount = 20;
-
-        private int _maxX;
-        private int _maxY;
 
         public Game(Window window)
         {
@@ -63,9 +60,6 @@ namespace Arcanoid
             
             _mainWindow.Content = border;
             _mainWindow.KeyDown += OnKeyDown;
-            
-            _maxX = (int)_mainWindow.Width;
-            _maxY = (int)_mainWindow.Height;
         }
 
         public void Start()
@@ -154,7 +148,6 @@ namespace Arcanoid
             ToggleMenu();
         }
 
-
         public async void SaveGame()
         {
             var dialog = new SaveFileDialog()
@@ -213,8 +206,7 @@ namespace Arcanoid
                 Console.WriteLine("Загрузка отменена.");
             }
         }
-
-
+        
         private void Settings()
         {
             var settingsWindow = new SettingsWindow(_shapeCount, OnShapeCountChanged);

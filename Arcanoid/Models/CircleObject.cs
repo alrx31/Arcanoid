@@ -44,17 +44,15 @@ public class CircleObject : DisplayObject
             StrokeThickness = 1,
         };
         
-        
         /*hitBoxShape = new Rectangle()
         {
             Width = size[0],
             Height = size[0],
-            Stroke = new SolidColorBrush(Color.FromRgb(255, 0, 0)), // Красный цвет для хитбокса
+            Stroke = new SolidColorBrush(Color.FromRgb(255, 0, 0)),
             StrokeThickness = 1,
-            Fill = null // Оставляем прозрачным
+            Fill = null
         };
         */
-        
         
         canvas.Children.Add(Shape);
         //canvas.Children.Add(hitBoxShape);

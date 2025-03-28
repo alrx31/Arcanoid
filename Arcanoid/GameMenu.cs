@@ -60,6 +60,7 @@ public class GameMenu
             Background = bg
         };
         contButton.Click += (s,e) => _pauseGame();
+        contButton.PointerReleased += (s, e) => contButton.Background = new SolidColorBrush(Colors.Red);
         
         var startButton = new Button
         {
