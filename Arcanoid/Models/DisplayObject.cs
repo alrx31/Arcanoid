@@ -72,9 +72,6 @@ public abstract class DisplayObject
 
         Canvas.SetLeft(Shape, X);
         Canvas.SetTop(Shape, Y);
-        
-        //Canvas.SetLeft(hitBoxShape, X);
-        //Canvas.SetTop(hitBoxShape, Y);
     }
 
     public abstract void Draw();

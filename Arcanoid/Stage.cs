@@ -44,7 +44,7 @@ namespace Arcanoid
                     _maxX,
                     _maxY,
                     new List<int>{random.Next(50,100)},
-                    new List<int>{random.Next(50,100)},
+                    new List<int>{random.Next(120,150)},
                     R1, G1, B1, R2, G2, B2
                     ));
                 
@@ -114,18 +114,16 @@ namespace Arcanoid
                 shape.Move();
             }
         }
+        
 
         private void CheckCollision(DisplayObject shape,int idx)
         {
-            for (int i = 0; i < _shapes.Count; i++)
+            for (int i = idx+1; i < _shapes.Count; i++)
             {
-                if (i == idx) continue;
                 if (IsColliding(_shapes[i], shape))
                 {
                     //wq    StopMovement();
                     HandleCollision(_shapes[i], shape);
-                    Console.WriteLine("Collision detected! Game stopped.");
-                    return;
                 }
             }
         }
@@ -182,10 +180,10 @@ namespace Arcanoid
                 v2x += (p2After - p2) * nx;
                 v2y += (p2After - p2) * ny;
 
-                shape1.Speed = Math.Sqrt(v1x * v1x + v1y * v1y);
+                //shape1.Speed = Math.Sqrt(v1x * v1x + v1y * v1y);
                 shape1.AngleSpeed = Math.Atan2(v1y, v1x);
 
-                shape2.Speed = Math.Sqrt(v2x * v2x + v2y * v2y);
+                //shape2.Speed = Math.Sqrt(v2x * v2x + v2y * v2y);
                 shape2.AngleSpeed = Math.Atan2(v2y, v2x);
             }
         }
