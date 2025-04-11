@@ -21,15 +21,15 @@ public abstract class DisplayObject
     public byte r1,g1,b1,r2,g2,b2;
     public List<int> Size { get; set; }
 
-    public DisplayObject(Canvas canvas, int _maxX, int _maxY)
+    public DisplayObject(Canvas canvas, int X, int Y)
     {
         this.Canvas = canvas;
 
         var rand = new Random();
 
-        X = rand.Next(50, _maxX - 100);
-        Y = rand.Next(50, _maxY - 100);
-        Speed = rand.Next(1, 10);
+        this.X = X;
+        this.Y = Y;
+        Speed = rand.Next(1, 8);
         AngleSpeed = rand.NextDouble() * 2 * Math.PI;
         AngleAcceleration = rand.NextDouble() * 2 * Math.PI;
     }

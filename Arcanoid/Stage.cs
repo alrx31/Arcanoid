@@ -38,13 +38,20 @@ namespace Arcanoid
             {
                 var (R1, G1, B1) = GetRandomBrush();
                 var (R2, G2, B2) = GetRandomBrush();
+
+                int size = Random.Shared.Next(120, 150);
+                int posX, posY;
+                do
+                {
+                    (posX,posY) = (Random.Shared.Next(_maxX), Random.Shared.Next(_maxY));
+                } while (isPositionInValid(posX,posY,_maxX,_maxY,size));
                 
                 _shapes.Add(new CircleObject(
                     GameCanvas,
-                    _maxX,
-                    _maxY,
+                    posX,
+                    posY,
                     new List<int>{random.Next(50,100)},
-                    new List<int>{random.Next(120,150)},
+                    new List<int>{size},
                     R1, G1, B1, R2, G2, B2
                     ));
                 
@@ -83,6 +90,20 @@ namespace Arcanoid
                     R1, G1, B1, R2, G2, B2
                     ));*/
             }
+        }
+
+        private bool isPositionInValid(int posX, int posY, int _maxX, int _maxY, int size)
+        {
+            foreach (var shape in _shapes)
+            {
+                double distance = Math.Sqrt(Math.Pow(shape.X - posX, 2) + Math.Pow(shape.Y - posY, 2));
+
+                if (distance < shape.Size[0] + shape.Size[0] || posX < 0 || posY < 0 || posX >= _maxX - 2*size || posY >= _maxY - 2*size)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void StartMovement(byte acc)
