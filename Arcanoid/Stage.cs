@@ -206,6 +206,19 @@ namespace Arcanoid
 
                 //shape2.Speed = Math.Sqrt(v2x * v2x + v2y * v2y);
                 shape2.AngleSpeed = Math.Atan2(v2y, v2x);
+                
+                double overlap = (shape1.Size[0] + shape2.Size[0]) - distance;
+                if (overlap > 0)
+                {
+                    double moveX = nx * (overlap / 2)/8;
+                    double moveY = ny * (overlap / 2)/8;
+
+                    shape1.X -= moveX;
+                    shape1.Y -= moveY;
+
+                    //shape2.X += moveX;
+                    //shape2.Y += moveY;
+                }
             }
         }
         
