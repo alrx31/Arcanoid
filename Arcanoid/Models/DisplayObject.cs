@@ -29,7 +29,7 @@ public abstract class DisplayObject
 
         this.X = X;
         this.Y = Y;
-        Speed = rand.Next(1, 8);
+        Speed = 2;//rand.Next(1, 2);                             // Dist/ms
         AngleSpeed = rand.NextDouble() * 2 * Math.PI;
         AngleAcceleration = rand.NextDouble() * 2 * Math.PI;
     }
@@ -39,7 +39,7 @@ public abstract class DisplayObject
         Acceleration = acceleration;
     }
 
-    public void Move()
+    public void Move(double dt)
     {
         double speedX = Speed * Math.Cos(AngleSpeed);
         double speedY = Speed * Math.Sin(AngleSpeed);
@@ -47,8 +47,9 @@ public abstract class DisplayObject
         double accelerationX = Acceleration * Math.Cos(AngleAcceleration);
         double accelerationY = Acceleration * Math.Sin(AngleAcceleration);
 
-        X += speedX;
-        Y += speedY;
+        var time = dt;
+        X += speedX*time;
+        Y += speedY*time;
 
         speedX += accelerationX;
         speedY += accelerationY;
@@ -70,6 +71,7 @@ public abstract class DisplayObject
             //Speed *= 0.95;
         }
 
+        Console.WriteLine($"Shape at ({X}, {Y}) with speed {Speed} and angle {AngleSpeed}");
         Canvas.SetLeft(Shape, X);
         Canvas.SetTop(Shape, Y);
     }

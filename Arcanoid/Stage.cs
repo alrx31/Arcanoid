@@ -2,8 +2,10 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Arcanoid.Models;
+using Arcanoid.Utils;
 using Avalonia.Threading;
 
 namespace Arcanoid
@@ -13,7 +15,8 @@ namespace Arcanoid
         public Canvas GameCanvas { get; private set; }
         
         private readonly List<DisplayObject> _shapes;
-        private readonly DispatcherTimer _timer;
+        private bool _isRunning;
+        private readonly double BASE_FPS = 16;
 
         public Stage()
         {
@@ -22,11 +25,6 @@ namespace Arcanoid
                 Background = Brushes.Black
             };
             _shapes = new List<DisplayObject>();
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(16)
-            };
-            _timer.Tick += OnTimerTick;
         }
 
         public void AddRandomShapes(int count, int _maxX, int _maxY)
@@ -106,18 +104,134 @@ namespace Arcanoid
             return false;
         }
 
-        public void StartMovement(byte acc)
+        public async void StartMovement(byte acc)
         {
             foreach (var shape in _shapes)
             {
                 shape.StartMovement(acc);
             }
-            _timer.Start();
+
+            _isRunning = true;
+
+            while (_isRunning)
+            {
+                var (delta,shape1,shape2) = CalculateNextCollision();
+
+                Console.WriteLine(delta);
+                DrawNextFrame(delta, shape1,shape2);
+                var time = (int)Math.Ceiling(delta);
+
+                await Task.Delay(time);
+                //Sleeper.Sleep(time);
+            }
         }
+
+        private void DrawNextFrame(double time, DisplayObject shape1, DisplayObject shape2)
+        {
+            foreach (var shape in _shapes)
+            {
+                if (time <= 0.1) time = 0.11;
+                shape.Move(time-0.1);
+            }
+            if (time < BASE_FPS) HandleCollision(shape1, shape2);
+        }
+
+        private (double,DisplayObject,DisplayObject) CalculateNextCollision()
+        {
+            double minTime = BASE_FPS;
+            DisplayObject sh1 = null;
+            DisplayObject sh2 = null;
+            
+            for (int i = 0; i < _shapes.Count; i++)
+            {
+                for (int j = i + 1; j < _shapes.Count; j++)
+                {
+                    var shape1 = _shapes[i];
+                    var shape2 = _shapes[j];
+                    
+                    var res = CalculateNextCollisionForTwoShapes(shape1, shape2);
+                    if (res < minTime)
+                    {
+                        minTime = res;
+                        sh1 = shape1;
+                        sh2 = shape2;
+                    }
+                }
+            }
+
+            return (minTime,sh1,sh2);
+        }
+
+        private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)
+        {
+            //Console.WriteLine("CalculateNextCollision() called");
+            //Console.WriteLine(Environment.StackTrace);
+            if (shape1 is CircleObject && shape2 is CircleObject)
+            {
+                double r1 = shape1.Size[0] / 2.0;
+                double r2 = shape2.Size[0] / 2.0;
+                double radiusSum = r1 + r2;
+
+                // Positions
+                double x1 = shape1.X + r1;
+                double y1 = shape1.Y + r1;
+                double x2 = shape2.X + r2;
+                double y2 = shape2.Y + r2;
+
+                // Velocities
+                double v1x = shape1.Speed * Math.Cos(shape1.AngleSpeed);
+                double v1y = shape1.Speed * Math.Sin(shape1.AngleSpeed);
+                double v2x = shape2.Speed * Math.Cos(shape2.AngleSpeed);
+                double v2y = shape2.Speed * Math.Sin(shape2.AngleSpeed);
+
+                // Relative motion
+                double dx = x1 - x2;
+                double dy = y1 - y2;
+                double dvx = v1x - v2x;
+                double dvy = v1y - v2y;
+
+                double a = dvx * dvx + dvy * dvy;
+                double b = 2 * (dx * dvx + dy * dvy);
+                double c = dx * dx + dy * dy - radiusSum * radiusSum;
+
+                // Already overlapping
+                if (c <= 0)
+                    
+                    return 0;
+
+                // No relative motion
+                if (a == 0)
+                    return BASE_FPS;
+
+                double discriminant = b * b - 4 * a * c;
+
+                // No real solution: no collision
+                if (discriminant < 0)
+                    return BASE_FPS;
+
+                double sqrtDisc = Math.Sqrt(discriminant);
+                double t1 = (-b - sqrtDisc) / (2 * a);
+                double t2 = (-b + sqrtDisc) / (2 * a);
+
+                // We want the smallest positive time
+                //if (t1 < 0.01) return 0.01;
+                if (t1 > 0)
+                    return t1;
+                if (t2 > 0)
+                    return t2;
+
+                // Collision happened in the past or not happening
+                return BASE_FPS;
+            }
+
+            return BASE_FPS;
+        }
+
+
 
         public void StopMovement()
         {
-            _timer.Stop();
+            _isRunning = false;
         }
 
         public void ClearCanvas()
@@ -125,17 +239,6 @@ namespace Arcanoid
             GameCanvas.Children.Clear();
             _shapes.Clear();
         }
-
-        private void OnTimerTick(object sender, EventArgs e)
-        {
-            for (var i = 0; i < _shapes.Count; i++)
-            {
-                var shape = _shapes[i];
-                CheckCollision(shape,i);
-                shape.Move();
-            }
-        }
-        
 
         private void CheckCollision(DisplayObject shape,int idx)
         {
@@ -151,8 +254,8 @@ namespace Arcanoid
         
         private bool IsColliding(DisplayObject shape1, DisplayObject shape2)
         {
-            var dx = shape1.X + shape1.Size[0] / 2 - (shape2.X + shape2.Size[0] / 2);
-            var dy = shape1.Y + shape1.Size[0] / 2 - (shape2.Y + shape2.Size[0] / 2);
+            var dx = shape1.X + (double)shape1.Size[0] / 2 - (shape2.X + (double)shape2.Size[0] / 2);
+            var dy = shape1.Y + (double)shape1.Size[0] / 2 - (shape2.Y + (double)shape2.Size[0] / 2);
             var distance = Math.Sqrt(dx * dx + dy * dy);
 
             return distance <= (double)shape1.Size[0] / 2 + (double)shape2.Size[0] / 2;
@@ -206,18 +309,39 @@ namespace Arcanoid
 
                 //shape2.Speed = Math.Sqrt(v2x * v2x + v2y * v2y);
                 shape2.AngleSpeed = Math.Atan2(v2y, v2x);
-                
-                double overlap = (shape1.Size[0] + shape2.Size[0]) - distance;
+
+                double overlap = (double) (shape1.Size[0] + shape2.Size[0]) / 2 - distance;
                 if (overlap > 0)
                 {
-                    double moveX = nx * (overlap / 2)/8;
-                    double moveY = ny * (overlap / 2)/8;
+                    double moveX = nx * (overlap / 2);
+                    double moveY = ny * (overlap / 2);
 
-                    shape1.X -= moveX;
-                    shape1.Y -= moveY;
+                    shape1.X += moveX;
+                    shape1.Y += moveY;
+                    shape2.X -= moveX;
+                    shape2.Y -= moveY;
+                    
+                    /*if (shape1.X > shape2.X)
+                    {
+                        shape1.X += moveX;
+                        shape2.X -= moveX;
+                    }
+                    else
+                    {
+                        shape1.X -= moveX;
+                        shape2.X += moveX;
+                    }
 
-                    //shape2.X += moveX;
-                    //shape2.Y += moveY;
+                    if (shape1.Y > shape2.Y)
+                    {
+                        shape1.Y += moveY;
+                        shape2.Y -= moveY;
+                    }
+                    else
+                    {
+                        shape1.Y -= moveY;
+                        shape2.Y += moveY;
+                    }*/
                 }
             }
         }
