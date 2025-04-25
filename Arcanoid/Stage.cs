@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Arcanoid.Models;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace Arcanoid
 {
