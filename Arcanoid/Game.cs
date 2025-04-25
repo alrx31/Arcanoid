@@ -26,7 +26,7 @@ namespace Arcanoid
         private bool _isRunWithAcceleration;
         private bool _isMenuOpen;
         
-        private int _shapeCount = 10;
+        private int _shapeCount = 2;
 
         public Game(Window window)
         {
@@ -40,7 +40,7 @@ namespace Arcanoid
             {
                 BorderBrush = Brushes.White, 
                 BorderThickness = new Thickness(10),
-                Padding = new Thickness(10),
+                //Padding = new Thickness(10),
             };
             
             _stage = new Stage();
