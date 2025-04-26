@@ -71,7 +71,7 @@ public abstract class DisplayObject
             //Speed *= 0.95;
         }
 
-        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+        Avalonia.Threading.Dispatcher.UIThread.Invoke(() =>
         {
             Canvas.SetLeft(Shape, X);
             Canvas.SetTop(Shape, Y);

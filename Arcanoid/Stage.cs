@@ -14,7 +14,7 @@ namespace Arcanoid
         
         private readonly List<DisplayObject> _shapes;
         private bool _isRunning;
-        private readonly double BASE_FPS = 16;
+        private readonly double BASE_FPS = 16; // in ms
 
         public Stage()
         {
@@ -35,7 +35,7 @@ namespace Arcanoid
                 var (R1, G1, B1) = GetRandomBrush();
                 var (R2, G2, B2) = GetRandomBrush();
 
-                int size = 200;//Random.Shared.Next(120, 150);
+                int size = 100;//Random.Shared.Next(120, 150);
                 int posX, posY;
                 int iteration = 0;
                 do
@@ -111,7 +111,7 @@ namespace Arcanoid
             return false;
         }
 
-        public async void StartMovement(byte acc)
+        public async void StartMovement(byte acc, double maxX, double maxY)
         {
             foreach (var shape in _shapes)
             {
@@ -122,20 +122,20 @@ namespace Arcanoid
 
             while (_isRunning)
             {
-                var (delta,shape1,shape2) = CalculateNextCollision();
+                var (delta,shape1,shape2, isWallCollision) = CalculateNextCollision(maxX,maxY);
 
                 Console.WriteLine(delta);
                 var time = (int)Math.Ceiling(delta);
 
-                await Dispatcher.UIThread.InvokeAsync(async() =>
+                await Dispatcher.UIThread.Invoke(async () =>
                 {
                     await Task.Delay(time);
-                    DrawNextFrame(delta, shape1,shape2);
+                    DrawNextFrame(delta, shape1,shape2,isWallCollision);
                 });
             }
         }
 
-        private void DrawNextFrame(double time, DisplayObject shape1, DisplayObject shape2)
+        private void DrawNextFrame(double time, DisplayObject shape1, DisplayObject shape2, bool isWallCollision)
         {
             foreach (var shape in _shapes)
             {
@@ -143,17 +143,45 @@ namespace Arcanoid
                 shape.Move(time);
             }
             
-            if (time < BASE_FPS) HandleCollision(shape1, shape2);
+            if (time < BASE_FPS && !isWallCollision) HandleCollision(shape1, shape2);
         }
 
-        private (double,DisplayObject,DisplayObject) CalculateNextCollision()
+        private (double, DisplayObject, DisplayObject, bool) CalculateNextCollision(double maxX, double maxY)
         {
             double minTime = BASE_FPS;
             DisplayObject sh1 = null;
             DisplayObject sh2 = null;
+            bool isWallCollision = false;
             
             for (int i = 0; i < _shapes.Count; i++)
             {
+                var shape = _shapes[i];
+                double vx = shape.Speed * Math.Cos(shape.AngleSpeed);
+                double vy = shape.Speed * Math.Sin(shape.AngleSpeed);
+
+                var distToLeft = shape.X;
+                var distToRight = maxX - (shape.X + shape.Size[0]);
+                
+                var distToTop = shape.Y;
+                var distToDown = maxY - (shape.Y + shape.Size[0]);
+
+                vx = vx > 0 ? vx : -vx; 
+                vy = vy > 0 ? vy : -vy; 
+                
+                var timeToLeft = distToLeft / vx;
+                var timeToRight = distToRight / vx;
+                var timeToTop = distToTop / vy;
+                var timeToDown = distToDown / vy;
+
+                var timeHorizontal = vx > 0 ? timeToRight : timeToLeft;
+                var timeVertical = vy > 0 ? timeToTop : timeToDown;
+
+                timeHorizontal = timeHorizontal == 0 ? 0.01 : timeHorizontal;
+                timeVertical = timeVertical == 0 ? 0.01 : timeVertical;
+                
+                if (timeHorizontal < minTime) minTime = timeHorizontal;
+                if (timeVertical < minTime) minTime = timeVertical;
+                
                 for (int j = i + 1; j < _shapes.Count; j++)
                 {
                     var shape1 = _shapes[i];
@@ -169,7 +197,7 @@ namespace Arcanoid
                 }
             }
 
-            return (minTime,sh1,sh2);
+            return (minTime,sh1,sh2, isWallCollision);
         }
 
         private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)

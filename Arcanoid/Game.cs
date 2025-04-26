@@ -26,7 +26,7 @@ namespace Arcanoid
         private bool _isRunWithAcceleration;
         private bool _isMenuOpen;
         
-        private int _shapeCount = 5;
+        private int _shapeCount = 10;
 
         public Game(Window window)
         {
@@ -92,7 +92,7 @@ namespace Arcanoid
                     }
                     else
                     {
-                        _stage.StartMovement(0);
+                        _stage.StartMovement(0, _mainWindow.Width, _mainWindow.Height);
                         _isRunWithAcceleration = true;
                     }
                 }
@@ -106,7 +106,7 @@ namespace Arcanoid
                     }
                     else
                     {
-                        _stage.StartMovement(1);
+                        _stage.StartMovement(1, _mainWindow.Width, _mainWindow.Height);
                         _isRunWithoutAcceleration = true;
                     }
                 }
