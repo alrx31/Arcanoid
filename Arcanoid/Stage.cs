@@ -4,8 +4,7 @@ using System.Threading.Tasks;
 using Arcanoid.Models;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Controls;
-using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace Arcanoid
 {
@@ -36,12 +35,20 @@ namespace Arcanoid
                 var (R1, G1, B1) = GetRandomBrush();
                 var (R2, G2, B2) = GetRandomBrush();
 
-                int size = Random.Shared.Next(120, 150);
+                int size = 200;//Random.Shared.Next(120, 150);
                 int posX, posY;
+                int iteration = 0;
                 do
                 {
                     (posX,posY) = (Random.Shared.Next(_maxX), Random.Shared.Next(_maxY));
-                } while (isPositionInValid(posX,posY,_maxX,_maxY,size));
+                    iteration++;
+                    if (iteration > 10_000)
+                    {
+                        Console.WriteLine("Less shapes or size");
+                        break;
+                    }
+                }
+                while (isPositionInValid(posX,posY,_maxX,_maxY,size));
                 
                 _shapes.Add(new CircleObject(
                     GameCanvas,
@@ -100,6 +107,7 @@ namespace Arcanoid
                     return true;
                 }
             }
+            
             return false;
         }
 
@@ -117,11 +125,13 @@ namespace Arcanoid
                 var (delta,shape1,shape2) = CalculateNextCollision();
 
                 Console.WriteLine(delta);
-                DrawNextFrame(delta, shape1,shape2);
                 var time = (int)Math.Ceiling(delta);
 
-                await Task.Delay(time);
-                //Sleeper.Sleep(time);
+                await Dispatcher.UIThread.InvokeAsync(async() =>
+                {
+                    await Task.Delay(time);
+                    DrawNextFrame(delta, shape1,shape2);
+                });
             }
         }
 
@@ -129,9 +139,10 @@ namespace Arcanoid
         {
             foreach (var shape in _shapes)
             {
-                if (time <= 0.1) time = 0.11;
-                shape.Move(time-0.1);
+                //if (time <= 0.1) time = 0.11;
+                shape.Move(time);
             }
+            
             if (time < BASE_FPS) HandleCollision(shape1, shape2);
         }
 
@@ -163,27 +174,22 @@ namespace Arcanoid
 
         private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)
         {
-            //Console.WriteLine("CalculateNextCollision() called");
-            //Console.WriteLine(Environment.StackTrace);
             if (shape1 is CircleObject && shape2 is CircleObject)
             {
                 double r1 = shape1.Size[0] / 2.0;
                 double r2 = shape2.Size[0] / 2.0;
                 double radiusSum = r1 + r2;
 
-                // Positions
                 double x1 = shape1.X + r1;
                 double y1 = shape1.Y + r1;
                 double x2 = shape2.X + r2;
                 double y2 = shape2.Y + r2;
 
-                // Velocities
                 double v1x = shape1.Speed * Math.Cos(shape1.AngleSpeed);
                 double v1y = shape1.Speed * Math.Sin(shape1.AngleSpeed);
                 double v2x = shape2.Speed * Math.Cos(shape2.AngleSpeed);
                 double v2y = shape2.Speed * Math.Sin(shape2.AngleSpeed);
 
-                // Relative motion
                 double dx = x1 - x2;
                 double dy = y1 - y2;
                 double dvx = v1x - v2x;
@@ -193,18 +199,15 @@ namespace Arcanoid
                 double b = 2 * (dx * dvx + dy * dvy);
                 double c = dx * dx + dy * dy - radiusSum * radiusSum;
 
-                // Already overlapping
                 if (c <= 0)
                     
-                    return 0;
+                    return 0.01;
 
-                // No relative motion
                 if (a == 0)
                     return BASE_FPS;
 
                 double discriminant = b * b - 4 * a * c;
 
-                // No real solution: no collision
                 if (discriminant < 0)
                     return BASE_FPS;
 
@@ -212,22 +215,17 @@ namespace Arcanoid
                 double t1 = (-b - sqrtDisc) / (2 * a);
                 double t2 = (-b + sqrtDisc) / (2 * a);
 
-                // We want the smallest positive time
-                //if (t1 < 0.01) return 0.01;
                 if (t1 > 0)
                     return t1;
                 if (t2 > 0)
                     return t2;
 
-                // Collision happened in the past or not happening
                 return BASE_FPS;
             }
 
             return BASE_FPS;
         }
-
-
-
+        
         public void StopMovement()
         {
             _isRunning = false;
@@ -237,27 +235,6 @@ namespace Arcanoid
         {
             GameCanvas.Children.Clear();
             _shapes.Clear();
-        }
-
-        private void CheckCollision(DisplayObject shape,int idx)
-        {
-            for (int i = idx+1; i < _shapes.Count; i++)
-            {
-                if (IsColliding(_shapes[i], shape))
-                {
-                    //wq    StopMovement();
-                    HandleCollision(_shapes[i], shape);
-                }
-            }
-        }
-        
-        private bool IsColliding(DisplayObject shape1, DisplayObject shape2)
-        {
-            var dx = shape1.X + (double)shape1.Size[0] / 2 - (shape2.X + (double)shape2.Size[0] / 2);
-            var dy = shape1.Y + (double)shape1.Size[0] / 2 - (shape2.Y + (double)shape2.Size[0] / 2);
-            var distance = Math.Sqrt(dx * dx + dy * dy);
-
-            return distance <= (double)shape1.Size[0] / 2 + (double)shape2.Size[0] / 2;
         }
         
         private void HandleCollision(DisplayObject shape1, DisplayObject shape2)
@@ -309,38 +286,40 @@ namespace Arcanoid
                 //shape2.Speed = Math.Sqrt(v2x * v2x + v2y * v2y);
                 shape2.AngleSpeed = Math.Atan2(v2y, v2x);
 
-                double overlap = (double) (shape1.Size[0] + shape2.Size[0]) / 2 - distance;
+                double overlap = (double) shape1.Size[0] / 2 + (double) shape2.Size[0] /2 - distance;
+                if(overlap < 0.01 && overlap > 0) overlap = 0.01;
                 if (overlap > 0)
                 {
-                    double moveX = nx * (overlap / 2);
-                    double moveY = ny * (overlap / 2);
-
-                    shape1.X += moveX;
-                    shape1.Y += moveY;
-                    shape2.X -= moveX;
-                    shape2.Y -= moveY;
+                    double moveX = nx * (overlap / 2) + 0.1;
+                    double moveY = ny * (overlap / 2) + 0.1;
                     
-                    /*if (shape1.X > shape2.X)
-                    {
-                        shape1.X += moveX;
-                        shape2.X -= moveX;
-                    }
-                    else
+                    double centre1X = shape1.X + (double) shape1.Size[0] / 2;
+                    double centre1Y = shape1.Y + (double) shape1.Size[0] / 2;
+                    
+                    double centre2X = shape2.X + (double) shape1.Size[0] / 2;
+                    double centre2Y = shape2.Y + (double) shape1.Size[0] / 2;
+
+                    if (centre1X < centre2X)
                     {
                         shape1.X -= moveX;
                         shape2.X += moveX;
                     }
+                    else
+                    {
+                        shape1.X += moveX;
+                        shape2.X -= moveX;
+                    }
 
-                    if (shape1.Y > shape2.Y)
+                    if (centre1Y < centre2Y)
+                    {
+                        shape1.Y -= moveY;
+                        shape2.Y += moveY;
+                    }
+                    else
                     {
                         shape1.Y += moveY;
                         shape2.Y -= moveY;
                     }
-                    else
-                    {
-                        shape1.Y -= moveY;
-                        shape2.Y += moveY;
-                    }*/
                 }
             }
         }

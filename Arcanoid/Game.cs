@@ -26,7 +26,7 @@ namespace Arcanoid
         private bool _isRunWithAcceleration;
         private bool _isMenuOpen;
         
-        private int _shapeCount = 2;
+        private int _shapeCount = 5;
 
         public Game(Window window)
         {
@@ -124,6 +124,9 @@ namespace Arcanoid
                 _mainWindow.WindowState = WindowState.FullScreen;
             }
             _isFullScreen = !_isFullScreen;
+            
+            ToggleMenu();
+            ToggleMenu();
         }
 
         private void ToggleMenu()

@@ -29,7 +29,7 @@ public abstract class DisplayObject
 
         this.X = X;
         this.Y = Y;
-        Speed = 2;//rand.Next(1, 2);                             // Dist/ms
+        Speed = 1;//rand.Next(1, 2);                             // Dist/ms
         AngleSpeed = rand.NextDouble() * 2 * Math.PI;
         AngleAcceleration = rand.NextDouble() * 2 * Math.PI;
     }
@@ -71,9 +71,11 @@ public abstract class DisplayObject
             //Speed *= 0.95;
         }
 
-        Console.WriteLine($"Shape at ({X}, {Y}) with speed {Speed} and angle {AngleSpeed}");
-        Canvas.SetLeft(Shape, X);
-        Canvas.SetTop(Shape, Y);
+        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            Canvas.SetLeft(Shape, X);
+            Canvas.SetTop(Shape, Y);
+        });
     }
 
     public abstract void Draw();
