@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace Arcanoid.Models;
 
@@ -29,7 +30,7 @@ public abstract class DisplayObject
 
         this.X = X;
         this.Y = Y;
-        Speed = 1;//rand.Next(1, 2);                             // Dist/ms
+        Speed = (double)rand.Next(1, 16)/4;                             // Dist/ms
         AngleSpeed = rand.NextDouble() * 2 * Math.PI;
         AngleAcceleration = rand.NextDouble() * 2 * Math.PI;
     }
@@ -71,11 +72,11 @@ public abstract class DisplayObject
             //Speed *= 0.95;
         }
 
-        Avalonia.Threading.Dispatcher.UIThread.Invoke(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             Canvas.SetLeft(Shape, X);
             Canvas.SetTop(Shape, Y);
-        });
+        }, DispatcherPriority.Render);
     }
 
     public abstract void Draw();

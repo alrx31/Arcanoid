@@ -15,6 +15,7 @@ namespace Arcanoid
         private readonly List<DisplayObject> _shapes;
         private bool _isRunning;
         private readonly double BASE_FPS = 16; // in ms
+        private readonly double EPSILON = 1;
 
         public Stage()
         {
@@ -35,7 +36,7 @@ namespace Arcanoid
                 var (R1, G1, B1) = GetRandomBrush();
                 var (R2, G2, B2) = GetRandomBrush();
 
-                int size = 100;//Random.Shared.Next(120, 150);
+                int size = Random.Shared.Next(70, 150);
                 int posX, posY;
                 int iteration = 0;
                 do
@@ -122,36 +123,38 @@ namespace Arcanoid
 
             while (_isRunning)
             {
-                var (delta,shape1,shape2, isWallCollision) = CalculateNextCollision(maxX,maxY);
+                var (delta, shapes) = CalculateNextCollision(maxX,maxY);
 
                 Console.WriteLine(delta);
+                if(delta < EPSILON) delta = EPSILON;
                 var time = (int)Math.Ceiling(delta);
-
-                await Dispatcher.UIThread.Invoke(async () =>
-                {
-                    await Task.Delay(time);
-                    DrawNextFrame(delta, shape1,shape2,isWallCollision);
-                });
+                
+                await Task.Delay(time);
+                DrawNextFrame(delta, shapes);
             }
         }
 
-        private void DrawNextFrame(double time, DisplayObject shape1, DisplayObject shape2, bool isWallCollision)
+        private void DrawNextFrame(
+            double time,
+            List<(DisplayObject, DisplayObject?)> shapes)
         {
-            foreach (var shape in _shapes)
+            Dispatcher.UIThread.Invoke(()=> {
+                foreach (var shape in _shapes)
+                    shape.Move(time);
+            }, DispatcherPriority.Render);
+
+            foreach (var (shape1,shape2) in shapes)
             {
-                //if (time <= 0.1) time = 0.11;
-                shape.Move(time);
+                if(shape2 is null) continue;
+                if (time < BASE_FPS) HandleCollision(shape1, shape2);
             }
             
-            if (time < BASE_FPS && !isWallCollision) HandleCollision(shape1, shape2);
         }
 
-        private (double, DisplayObject, DisplayObject, bool) CalculateNextCollision(double maxX, double maxY)
+        private (double, List<(DisplayObject, DisplayObject?)>) CalculateNextCollision(double maxX, double maxY)
         {
+            var shapes = new List<(DisplayObject, DisplayObject)>();
             double minTime = BASE_FPS;
-            DisplayObject sh1 = null;
-            DisplayObject sh2 = null;
-            bool isWallCollision = false;
             
             for (int i = 0; i < _shapes.Count; i++)
             {
@@ -178,9 +181,17 @@ namespace Arcanoid
 
                 timeHorizontal = timeHorizontal == 0 ? 0.01 : timeHorizontal;
                 timeVertical = timeVertical == 0 ? 0.01 : timeVertical;
-                
-                if (timeHorizontal < minTime) minTime = timeHorizontal;
-                if (timeVertical < minTime) minTime = timeVertical;
+
+                if (timeHorizontal < minTime)
+                {
+                    minTime = timeHorizontal;
+                }else if (timeVertical < minTime)
+                {
+                    minTime = timeVertical;
+                }else if (timeVertical < EPSILON || timeHorizontal < EPSILON)
+                {
+                    shapes.Add((shape, null));
+                }
                 
                 for (int j = i + 1; j < _shapes.Count; j++)
                 {
@@ -191,13 +202,15 @@ namespace Arcanoid
                     if (res < minTime)
                     {
                         minTime = res;
-                        sh1 = shape1;
-                        sh2 = shape2;
+                        shapes.Add((shape1,shape2));
+                    }else if (res < EPSILON)
+                    {
+                        shapes.Add((shape1,shape2));
                     }
                 }
             }
 
-            return (minTime,sh1,sh2, isWallCollision);
+            return (minTime,shapes);
         }
 
         private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)
@@ -226,11 +239,12 @@ namespace Arcanoid
                 double a = dvx * dvx + dvy * dvy;
                 double b = 2 * (dx * dvx + dy * dvy);
                 double c = dx * dx + dy * dy - radiusSum * radiusSum;
+                
+                double ov = Math.Sqrt(dx * dx + dy * dy) - (double)(shape1.Size[0] + shape2.Size[0])/ 2;
 
-                if (c <= 0)
-                    
+                if (ov < 0)
                     return 0.01;
-
+                
                 if (a == 0)
                     return BASE_FPS;
 
@@ -318,36 +332,20 @@ namespace Arcanoid
                 if(overlap < 0.01 && overlap > 0) overlap = 0.01;
                 if (overlap > 0)
                 {
-                    double moveX = nx * (overlap / 2) + 0.1;
-                    double moveY = ny * (overlap / 2) + 0.1;
+                    double moveX = nx * (overlap / 2) + 1;
+                    double moveY = ny * (overlap / 2) + 1;
                     
                     double centre1X = shape1.X + (double) shape1.Size[0] / 2;
                     double centre1Y = shape1.Y + (double) shape1.Size[0] / 2;
                     
-                    double centre2X = shape2.X + (double) shape1.Size[0] / 2;
-                    double centre2Y = shape2.Y + (double) shape1.Size[0] / 2;
+                    double centre2X = shape2.X + (double) shape2.Size[0] / 2;
+                    double centre2Y = shape2.Y + (double) shape2.Size[0] / 2;
 
-                    if (centre1X < centre2X)
-                    {
-                        shape1.X -= moveX;
-                        shape2.X += moveX;
-                    }
-                    else
-                    {
-                        shape1.X += moveX;
-                        shape2.X -= moveX;
-                    }
-
-                    if (centre1Y < centre2Y)
-                    {
-                        shape1.Y -= moveY;
-                        shape2.Y += moveY;
-                    }
-                    else
-                    {
-                        shape1.Y += moveY;
-                        shape2.Y -= moveY;
-                    }
+                    shape1.X -= moveX;
+                    shape1.Y -= moveY;
+                    
+                    shape2.X += moveX;
+                    shape2.Y += moveY;
                 }
             }
         }

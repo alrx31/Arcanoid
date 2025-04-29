@@ -26,7 +26,7 @@ namespace Arcanoid
         private bool _isRunWithAcceleration;
         private bool _isMenuOpen;
         
-        private int _shapeCount = 10;
+        private int _shapeCount = 20;
 
         public Game(Window window)
         {
