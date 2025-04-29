@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Arcanoid.Models;
 using Avalonia;
 using Avalonia.Controls;
@@ -59,12 +60,35 @@ namespace Arcanoid
             border.Child = _mainGrid;
             
             _mainWindow.Content = border;
+            _mainWindow.CanResize = true;
+            
+            // Events
             _mainWindow.KeyDown += OnKeyDown;
+            // Resize
+            _mainWindow.Resized += OnResize;
         }
 
         public void Start()
         {
             _stage.AddRandomShapes(_shapeCount,(int)_mainWindow.Width,(int)_mainWindow.Height);
+        }
+
+        private void OnResize(object sender, WindowResizedEventArgs e)
+        {
+            // Menu change position after resize
+            ToggleMenu();
+            ToggleMenu();
+
+            _isRunWithAcceleration = false;
+            _isRunWithoutAcceleration = true;
+            _stage.StopMovement();
+
+            _stage.StartMovement(0, _mainWindow.Width, _mainWindow.Height);
+            _isRunWithAcceleration = true;
+            
+            _stage.StopMovement();
+            _isRunWithAcceleration = false;
+            _isRunWithoutAcceleration = false;
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e)

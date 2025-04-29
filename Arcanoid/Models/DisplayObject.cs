@@ -30,14 +30,14 @@ public abstract class DisplayObject
 
         this.X = X;
         this.Y = Y;
-        Speed = (double)rand.Next(1, 16)/4;                             // Dist/ms
+        Speed = (double)rand.Next(1, 4)/4;                             // Dist/ms
         AngleSpeed = rand.NextDouble() * 2 * Math.PI;
         AngleAcceleration = rand.NextDouble() * 2 * Math.PI;
     }
     
     public void StartMovement(double acceleration)
     {
-        Acceleration = acceleration;
+        Acceleration = acceleration / 100;
     }
 
     public void Move(double dt)
