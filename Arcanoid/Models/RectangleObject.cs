@@ -3,6 +3,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using Avalonia.Threading;
 
 namespace Arcanoid.Models
 {
@@ -17,10 +18,11 @@ namespace Arcanoid.Models
             byte B1,
             byte R2,
             byte G2,
-            byte B2
+            byte B2,
+            bool isSpetial
             ) : base(canvas,
             _maxX,
-            _maxY)
+            _maxY, isSpetial)
         {
             this.Size = size;
             this.r1 = R1;
@@ -46,10 +48,18 @@ namespace Arcanoid.Models
             Draw();
         }
 
+        public override void HandleCollision(DisplayObject other)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Draw()
         {
-            Canvas.SetLeft(Shape, X);
-            Canvas.SetTop(Shape, Y);
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                Canvas.SetLeft(Shape, X);
+                Canvas.SetTop(Shape, Y);
+            }, DispatcherPriority.Render);
         }
     }
 }

@@ -1,4 +1,4 @@
-using Avalonia;
+/*using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
@@ -59,4 +59,4 @@ namespace Arcanoid.Models
             Canvas.SetTop(Shape, Y);
         }
     }
-}
+}*/

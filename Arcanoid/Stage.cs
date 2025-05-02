@@ -12,10 +12,14 @@ namespace Arcanoid
     {
         public Canvas GameCanvas { get; private set; }
         
+        // 0 - platform, 1 - special ball
         private readonly List<DisplayObject> _shapes;
+        
         private bool _isRunning;
+        
         private readonly double BASE_FPS = 16; // in ms
-        private readonly double EPSILON = 1;
+        private readonly double EPSILON = 1; // expected calc error
+        private readonly double PLATFORM_STEP_SIZE = 30;
 
         public Stage()
         {
@@ -26,24 +30,27 @@ namespace Arcanoid
             _shapes = new List<DisplayObject>();
         }
 
+        #region AddObjects
         public void AddRandomShapes(int count, int _maxX, int _maxY)
         {
-            var random = new Random();
             Console.WriteLine(_maxX + " - " + _maxY);
+            
+            addPlatform(_maxX, _maxY);
+            addSpetialBall(_maxX, _maxY);
             
             for (int i = 0; i < count; i++)
             {
                 var (R1, G1, B1) = GetRandomBrush();
                 var (R2, G2, B2) = GetRandomBrush();
 
-                int size = Random.Shared.Next(70, 150);
+                int size = Random.Shared.Next(100, 150);
                 int posX, posY;
                 int iteration = 0;
                 do
                 {
                     (posX,posY) = (Random.Shared.Next(_maxX), Random.Shared.Next(_maxY));
                     iteration++;
-                    if (iteration > 10_000)
+                    if (iteration > 100_000)
                     {
                         Console.WriteLine("Less shapes or size");
                         break;
@@ -55,48 +62,37 @@ namespace Arcanoid
                     GameCanvas,
                     posX,
                     posY,
-                    new List<int>{random.Next(50,100)},
                     new List<int>{size},
-                    R1, G1, B1, R2, G2, B2
+                    R1, G1, B1, R2, G2, B2,
+                    false
                     ));
-                
-                /*
-                (R1, G1, B1) = GetRandomBrush();
-                (R2, G2, B2) = GetRandomBrush();
-
-                
-                _shapes.Add(new RectangleObject(
-                    GameCanvas,
-                    _maxX,
-                    _maxY,
-                    new List<int>{random.Next(20,150),random.Next(20,150)},
-                    R1, G1, B1, R2, G2, B2
-                    ));
-                
-                (R1, G1, B1) = GetRandomBrush();
-                (R2, G2, B2) = GetRandomBrush();
-
-                _shapes.Add(new TriangleShape(
-                    GameCanvas,
-                    _maxX,
-                    _maxY,
-                    new List<int>{random.Next(0,100),random.Next(0,100),random.Next(0,100),random.Next(0,100),random.Next(0,100),random.Next(0,100)},
-                    R1, G1, B1, R2, G2, B2
-                    ));
-                
-                (R1, G1, B1) = GetRandomBrush();
-                (R2, G2, B2) = GetRandomBrush();
-
-                _shapes.Add(new TrapezoidObject(
-                    GameCanvas,
-                    _maxX,
-                    _maxY,
-                    new List<int>{random.Next(20,70),random.Next(20,70),random.Next(20,70)},
-                    R1, G1, B1, R2, G2, B2
-                    ));*/
             }
         }
 
+        private void addSpetialBall(int _maxX, int _maxY)
+        {
+            _shapes.Add(new CircleObject(
+                GameCanvas,
+                _maxX/2 - 35,
+                _maxY-200,
+                new List<int>{70},
+                255,255,255,0,0,0,
+                true
+            ));
+        }
+
+        private void addPlatform(int _maxX, int _maxY)
+        {
+            _shapes.Add(new Platform(
+                GameCanvas,
+                _maxX/2 - 200,
+                _maxY-50,
+                new List<int>{400,30},
+                255,255,255,0,0,0,
+                true
+                ));
+        }
+        
         private bool isPositionInValid(int posX, int posY, int _maxX, int _maxY, int size)
         {
             foreach (var shape in _shapes)
@@ -111,7 +107,8 @@ namespace Arcanoid
             
             return false;
         }
-
+        #endregion
+        
         public async void StartMovement(byte acc, double maxX, double maxY)
         {
             foreach (var shape in _shapes)
@@ -138,19 +135,20 @@ namespace Arcanoid
             double time,
             List<(DisplayObject, DisplayObject?)> shapes)
         {
-            Dispatcher.UIThread.Invoke(()=> {
+            Dispatcher.UIThread.Invoke(()=>
+            {
                 foreach (var shape in _shapes)
-                    shape.Move(time);
+                    MoveShape(shape, time);
             }, DispatcherPriority.Render);
 
             foreach (var (shape1,shape2) in shapes)
             {
-                if(shape2 is null) continue;
                 if (time < BASE_FPS) HandleCollision(shape1, shape2);
             }
             
         }
 
+        #region Collision
         private (double, List<(DisplayObject, DisplayObject?)>) CalculateNextCollision(double maxX, double maxY)
         {
             var shapes = new List<(DisplayObject, DisplayObject)>();
@@ -265,8 +263,101 @@ namespace Arcanoid
                 return BASE_FPS;
             }
 
+            if (shape1 is RectangleObject rect && shape2 is CircleObject circle)
+            {
+                var rectLeft = rect.X;
+                var rectTop = rect.Y;
+                var rectRight = rect.X + rect.Size[0];
+                var rectBottom = rect.Y + rect.Size[1];
+
+                var circleLeft = circle.X;
+                var circleTop = circle.Y;
+                var circleRight = circle.X + circle.Size[0];
+                var circleBottom = circle.Y + circle.Size[0];
+
+                //var rectSpeedX = rect.Speed * Math.Cos(rect.AngleSpeed);
+                //var rectSpeedY = rect.Speed * Math.Sin(rect.AngleSpeed);
+
+                var circleSpeedX = circle.Speed * Math.Cos(circle.AngleSpeed);
+                var circleSpeedY = circle.Speed * Math.Sin(circle.AngleSpeed);
+
+                var dvx = circleSpeedX;
+                var dvy = circleSpeedY;
+
+                double txEntry, txExit;
+                if (dvx > 0)
+                {
+                    txEntry = (rectLeft - circleRight) / dvx;
+                    txExit = (rectRight - circleLeft) / dvx;
+                }
+                else if (dvx < 0)
+                {
+                    txEntry = (rectRight - circleLeft) / dvx;
+                    txExit = (rectLeft - circleRight) / dvx;
+                }
+                else
+                {
+                    txEntry = double.NegativeInfinity;
+                    txExit = double.PositiveInfinity;
+                }
+
+                // Time to collide in Y
+                double tyEntry, tyExit;
+                if (dvy > 0)
+                {
+                    tyEntry = (rectTop - circleBottom) / dvy;
+                    tyExit = (rectBottom - circleTop) / dvy;
+                }
+                else if (dvy < 0)
+                {
+                    tyEntry = (rectBottom - circleTop) / dvy;
+                    tyExit = (rectTop - circleBottom) / dvy;
+                }
+                else
+                {
+                    tyEntry = double.NegativeInfinity;
+                    tyExit = double.PositiveInfinity;
+                }
+
+                var entryTime = Math.Max(txEntry, tyEntry);
+                var exitTime = Math.Min(txExit, tyExit);
+
+                if (entryTime > exitTime || (txEntry < 0 && tyEntry < 0))
+                {
+                    Console.WriteLine("No collision.");
+                }
+                else
+                {
+                    return entryTime;
+                }
+            }
+
+
             return BASE_FPS;
         }
+        
+        private void HandleCollision(DisplayObject shape11, DisplayObject shape2)
+        {
+            if (shape11 is CircleObject shape1)
+            {
+                shape1.HandleCollision(shape2);
+                if (shape1.isSpetialBall && shape2 is not null)
+                {
+                    Dispatcher.UIThread.Invoke(() =>
+                    {
+                        _shapes.Remove(shape2);
+                        GameCanvas.Children.Remove(shape2.Shape);
+                    }, DispatcherPriority.Render);
+                }
+            }
+
+            if (shape11 is RectangleObject shape1Rect)
+            {
+                shape2.HandleCollision(shape1Rect);
+            }
+        }
+        
+        #endregion
         
         public void StopMovement()
         {
@@ -278,78 +369,8 @@ namespace Arcanoid
             GameCanvas.Children.Clear();
             _shapes.Clear();
         }
-        
-        private void HandleCollision(DisplayObject shape1, DisplayObject shape2)
-        {
-            if (shape1 is CircleObject && shape2 is CircleObject)
-            {
-                double mass1 = 1;//shape1.Size[0];
-                double mass2 = 1;//shape2.Size[0];
-                
-                double v1x = shape1.Speed * Math.Cos(shape1.AngleSpeed);
-                double v1y = shape1.Speed * Math.Sin(shape1.AngleSpeed);
 
-                double v2x = shape2.Speed * Math.Cos(shape2.AngleSpeed);
-                double v2y = shape2.Speed * Math.Sin(shape2.AngleSpeed);
-
-                double nx = shape2.X - shape1.X;
-                double ny = shape2.Y - shape1.Y;
-                double distance = Math.Sqrt(nx * nx + ny * ny);
-
-                if (distance == 0) return;
-
-                nx /= distance;
-                ny /= distance;
-
-                double relativeVelocityX = v2x - v1x;
-                double relativeVelocityY = v2y - v1y;
-                double dotProduct = relativeVelocityX * nx + relativeVelocityY * ny;
-
-                if (dotProduct > 0)
-                {
-                    return;
-                }
-
-                double p1 = v1x * nx + v1y * ny;
-                double p2 = v2x * nx + v2y * ny;
-
-                double p1After = (p1 * (mass1 - mass2) + 2 * mass2 * p2) / (mass1 + mass2);
-                double p2After = (p2 * (mass2 - mass1) + 2 * mass1 * p1) / (mass1 + mass2);
-
-                v1x += (p1After - p1) * nx;
-                v1y += (p1After - p1) * ny;
-
-                v2x += (p2After - p2) * nx;
-                v2y += (p2After - p2) * ny;
-
-                //shape1.Speed = Math.Sqrt(v1x * v1x + v1y * v1y);
-                shape1.AngleSpeed = Math.Atan2(v1y, v1x);
-
-                //shape2.Speed = Math.Sqrt(v2x * v2x + v2y * v2y);
-                shape2.AngleSpeed = Math.Atan2(v2y, v2x);
-
-                double overlap = (double) shape1.Size[0] / 2 + (double) shape2.Size[0] /2 - distance;
-                if(overlap < 0.01 && overlap > 0) overlap = 0.01;
-                if (overlap > 0)
-                {
-                    double moveX = nx * (overlap / 2) + 1;
-                    double moveY = ny * (overlap / 2) + 1;
-                    
-                    double centre1X = shape1.X + (double) shape1.Size[0] / 2;
-                    double centre1Y = shape1.Y + (double) shape1.Size[0] / 2;
-                    
-                    double centre2X = shape2.X + (double) shape2.Size[0] / 2;
-                    double centre2Y = shape2.Y + (double) shape2.Size[0] / 2;
-
-                    shape1.X -= moveX;
-                    shape1.Y -= moveY;
-                    
-                    shape2.X += moveX;
-                    shape2.Y += moveY;
-                }
-            }
-        }
-        
+        #region ShapeData
         public List<ShapeData> GetShapesData()
         {
             var shapesData = new List<ShapeData>();
@@ -398,7 +419,7 @@ namespace Arcanoid
                 switch (data.ShapeType)
                 {
                     case "CircleObject":
-                        shape = new CircleObject(GameCanvas,800,800,data.Size,data.Size,r1,g1,b1,r2,g2,b2)
+                        shape = new CircleObject(GameCanvas,800,800,data.Size,r1,g1,b1,r2,g2,b2,false)
                         {
                             X = data.X,
                             Y = data.Y,
@@ -407,7 +428,7 @@ namespace Arcanoid
                             Acceleration = data.Acceleration
                         };
                         break;
-                    case "RectangleObject":
+                    /*case "RectangleObject":
                         shape = new RectangleObject(GameCanvas,800,800,data.Size, r1,g1,b1,r2,g2,b2)
                         {
                             X = data.X,
@@ -436,7 +457,7 @@ namespace Arcanoid
                             AngleSpeed = data.AngleSpeed,
                             Acceleration = data.Acceleration
                         };
-                        break;
+                        break;*/
                 }
 
                 if (shape != null)
@@ -451,13 +472,74 @@ namespace Arcanoid
                 }
             }
         }
+        #endregion
+
+        public void MoveShape(DisplayObject shape, double dt)
+        {
+            if (shape is Platform) return;
+            double speedX = shape.Speed * Math.Cos(shape.AngleSpeed);
+            double speedY = shape.Speed * Math.Sin(shape.AngleSpeed);
+
+            double accelerationX = shape.Acceleration * Math.Cos(shape.AngleAcceleration);
+            double accelerationY = shape.Acceleration * Math.Sin(shape.AngleAcceleration);
+
+            var time = dt;
+            shape.X += speedX*time;
+            shape.Y += speedY*time;
+
+            speedX += accelerationX;
+            speedY += accelerationY;
+
+            shape.Speed = Math.Sqrt(speedX * speedX + speedY * speedY);
+
+            shape.AngleSpeed = Math.Atan2(speedY, speedX);
+
+            if (shape.X <= 0 || shape.X >= shape.Canvas.Bounds.Width - shape.Shape.Width)
+            {
+                shape.AngleSpeed = Math.PI - shape.AngleSpeed; 
+                shape.X = Math.Max(0, Math.Min(shape.X, shape.Canvas.Bounds.Width - shape.Shape.Width));
+                //Speed *= 0.95;
+            }
+            if (shape.Y <= 0 || shape.Y >= shape.Canvas.Bounds.Height - shape.Shape.Height)
+            {
+                shape.AngleSpeed = -shape.AngleSpeed;
+                shape.Y = Math.Max(0, Math.Min(shape.Y, shape.Canvas.Bounds.Height - shape.Shape.Height));
+                //Speed *= 0.95;
+            }
+
+            if (shape.Y >= shape.Canvas.Bounds.Height - shape.Shape.Height && shape.isSpetial)
+            {
+                StopMovement();
+            }
+            
+            shape.Draw();
+        }
+
+        public void MovePlatform(bool direction) // true - right
+        {
+            var platform = _shapes[0];
+            var step = PLATFORM_STEP_SIZE;
+            if (platform.X <= 0 && direction == false)
+            {
+                platform.X = 0;
+                step = 0;
+            }
+
+            if (platform.X >= GameCanvas.Bounds.Width - platform.Shape.Width && direction == true)
+            {
+                platform.X = GameCanvas.Bounds.Width - platform.Shape.Width;
+                step = 0;
+            }
+            platform.X += direction ? step : -step;
+            platform.Draw();
+        }
         
         public static (byte,byte,byte) GetRandomBrush()
         {
             Random rand = new Random();
-            byte r = (byte)rand.Next(256);
-            byte g = (byte)rand.Next(256);
-            byte b = (byte)rand.Next(256);
+            byte r = (byte)rand.Next(250);
+            byte g = (byte)rand.Next(250);
+            byte b = (byte)rand.Next(250);
 
             return (r,g,b);
         }

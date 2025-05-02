@@ -18,24 +18,24 @@ namespace Arcanoid
         private readonly Stage _stage;
         private readonly Window _mainWindow;
         private readonly GameMenu _menu;
-        private Grid _mainGrid;
-        private Canvas _menuCanvas;
+        private readonly Grid _mainGrid;
+        private readonly Canvas _menuCanvas;
         
         private bool _isFullScreen = true;
         private bool _isRunWithoutAcceleration;
         
         private bool _isRunWithAcceleration;
         private bool _isMenuOpen;
-        
-        private int _shapeCount = 20;
+
+        private int _shapeCount = 10;
 
         public Game(Window window)
         {
             _mainWindow = window;
             
             _mainWindow.WindowState = WindowState.FullScreen;
-            _mainWindow.Width = 1900;
-            _mainWindow.Height = 1100;
+            _mainWindow.Width = 1920;
+            _mainWindow.Height = 1200;
 
             var border = new Border
             {
@@ -93,6 +93,15 @@ namespace Arcanoid
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Key == Key.Right)
+            {
+                _stage.MovePlatform(true);
+            }
+
+            if (e.Key == Key.Left)
+            {
+                _stage.MovePlatform(false);
+            }
             if (e.Key == Key.P)
             {
                 ToggleFullScreen();
