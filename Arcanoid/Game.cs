@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Arcanoid.Models;
+using Arcanoid.Special;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -18,6 +19,9 @@ namespace Arcanoid
         private readonly Stage _stage;
         private readonly Window _mainWindow;
         private readonly GameMenu _menu;
+
+        private Statistics _statistics;
+        
         private readonly Grid _mainGrid;
         private readonly Canvas _menuCanvas;
         
@@ -26,9 +30,11 @@ namespace Arcanoid
         
         private bool _isRunWithAcceleration;
         private bool _isMenuOpen;
-
-        private int _shapeCount = 10;
-
+        
+        private int SHAPES_COUNT = 10;
+        private readonly int START_LIVES_COUNT = 3;
+        private readonly int START_DIFFICULTY_LEVEL = 1; // should be greet than 0
+        
         public Game(Window window)
         {
             _mainWindow = window;
@@ -43,8 +49,15 @@ namespace Arcanoid
                 BorderThickness = new Thickness(10),
                 //Padding = new Thickness(10),
             };
+
+            _statistics = new Statistics
+            {
+                DifficultyLevel = START_DIFFICULTY_LEVEL,
+                LivesCount = START_LIVES_COUNT,
+                Score = 0
+            };
             
-            _stage = new Stage();
+            _stage = new Stage(_statistics);
             _menuCanvas = new Canvas
             {
                 Background = Brushes.Transparent,
@@ -70,7 +83,7 @@ namespace Arcanoid
 
         public void Start()
         {
-            _stage.AddRandomShapes(_shapeCount,(int)_mainWindow.Width,(int)_mainWindow.Height);
+            _stage.AddRandomShapes(SHAPES_COUNT,(int)_mainWindow.Width,(int)_mainWindow.Height);
         }
 
         private void OnResize(object sender, WindowResizedEventArgs e)
@@ -83,7 +96,7 @@ namespace Arcanoid
             _isRunWithoutAcceleration = true;
             _stage.StopMovement();
 
-            _stage.StartMovement(0, _mainWindow.Width, _mainWindow.Height);
+            _stage.StartMovement(0, _mainWindow.Width, _mainWindow.Height, _statistics);
             _isRunWithAcceleration = true;
             
             _stage.StopMovement();
@@ -125,7 +138,7 @@ namespace Arcanoid
                     }
                     else
                     {
-                        _stage.StartMovement(0, _mainWindow.Width, _mainWindow.Height);
+                        _stage.StartMovement(0, _mainWindow.Width, _mainWindow.Height, _statistics);
                         _isRunWithAcceleration = true;
                     }
                 }
@@ -139,7 +152,7 @@ namespace Arcanoid
                     }
                     else
                     {
-                        _stage.StartMovement(1, _mainWindow.Width, _mainWindow.Height);
+                        _stage.StartMovement(1, _mainWindow.Width, _mainWindow.Height, _statistics);
                         _isRunWithoutAcceleration = true;
                     }
                 }
@@ -245,14 +258,14 @@ namespace Arcanoid
         
         private void Settings()
         {
-            var settingsWindow = new SettingsWindow(_shapeCount, OnShapeCountChanged);
+            var settingsWindow = new SettingsWindow(SHAPES_COUNT, OnShapeCountChanged);
             settingsWindow.ShowDialog(_mainWindow);
         }
 
         private void OnShapeCountChanged(int newCount)
         {
-            _shapeCount = newCount;
-            Console.WriteLine($"Количество фигур изменено на: {_shapeCount}");
+            SHAPES_COUNT = newCount;
+            Console.WriteLine($"Количество фигур изменено на: {SHAPES_COUNT}");
         }
 
         private void Pause()

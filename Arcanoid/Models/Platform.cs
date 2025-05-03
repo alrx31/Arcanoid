@@ -21,6 +21,7 @@ public class Platform : RectangleObject
         _maxX,
         _maxY,
         size,
+        0,
         R1,
         G1,
         B1,

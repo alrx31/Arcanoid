@@ -13,15 +13,16 @@ public abstract class DisplayObject
     public Canvas Canvas { get; set; }
     public double X { get; set; }
     public double Y{ get; set; }
-    public double Speed{ get; set; }
+    public double Speed{ get; set; }  // Dist/ms
     public double AngleSpeed{ get; set; }
     public double Acceleration{ get; set; }
     public double AngleAcceleration{ get; set; }
     public bool isSpetial { get; set; }
     public byte r1,g1,b1,r2,g2,b2;
     public List<int> Size { get; set; }
+    public int ScoreValue { get; set; }
 
-    public DisplayObject(Canvas canvas, int X, int Y, bool isSpetial)
+    public DisplayObject(Canvas canvas, int X, int Y, bool isSpetial,double speed)
     {
         this.isSpetial = isSpetial;
         this.Canvas = canvas;
@@ -30,9 +31,10 @@ public abstract class DisplayObject
 
         this.X = X;
         this.Y = Y;
-        Speed = (double)rand.Next(1, 8)/4;                             // Dist/ms
+        Speed = speed;                            
         AngleSpeed = rand.NextDouble() * 2 * Math.PI;
         AngleAcceleration = rand.NextDouble() * 2 * Math.PI;
+        ScoreValue = rand.Next(1, 100);
     }
     
     public void StartMovement(double acceleration)

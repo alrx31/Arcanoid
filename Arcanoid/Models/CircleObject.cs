@@ -15,6 +15,7 @@ public class CircleObject : DisplayObject
         int _maxX,
         int _maxY,
         List<int> size,
+        double speed,
         byte R1,
         byte G1,
         byte B1,
@@ -25,7 +26,8 @@ public class CircleObject : DisplayObject
         ) : base(canvas,
         _maxX,
         _maxY,
-        isSpetialBall
+        isSpetialBall,
+        speed
         )
     {
         this.isSpetialBall = isSpetialBall;
@@ -125,9 +127,8 @@ public class CircleObject : DisplayObject
             double rectTop = rect.Y;
             double rectBottom = rect.Y + rect.Size[1];
 
-            // Basic: Invert Y velocity
             this.AngleSpeed = -this.AngleSpeed;
-
+            
             // Optional (bonus): Angle adjustment based on where the ball hits
             double hitPos = (circleCenterX - rectLeft) / rect.Size[0]; // 0 (left) → 1 (right)
             double angleVariation = (hitPos - 0.5) * Math.PI / 2; // Adjust max ±45°

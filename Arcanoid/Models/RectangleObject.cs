@@ -13,6 +13,7 @@ namespace Arcanoid.Models
             int _maxX,
             int _maxY,
             List<int> size,
+            double speed,
             byte R1,
             byte G1,
             byte B1,
@@ -22,7 +23,10 @@ namespace Arcanoid.Models
             bool isSpetial
             ) : base(canvas,
             _maxX,
-            _maxY, isSpetial)
+            _maxY,
+            isSpetial,
+            speed
+            )
         {
             this.Size = size;
             this.r1 = R1;

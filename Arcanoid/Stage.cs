@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Arcanoid.Models;
+using Arcanoid.Special;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -11,33 +12,59 @@ namespace Arcanoid
     public class Stage
     {
         public Canvas GameCanvas { get; private set; }
-        
+        private Statistics baseStatistics { get; set; }
+        public Statistics Statistics { get; private set; }
+
+        private TextBlock _statistics { get; set; }
+        private TextBlock _fullScreenMessage { get; set; }
+
         // 0 - platform, 1 - special ball
         private readonly List<DisplayObject> _shapes;
-        
+
         private bool _isRunning;
-        
+
+        private int SHAPES_COUNT;
+
+        private readonly int SCORE_FOR_LEVEL = 1000;
+        private readonly int MIN_LIVES = 0; // when stop
         private readonly double BASE_FPS = 16; // in ms
         private readonly double EPSILON = 1; // expected calc error
         private readonly double PLATFORM_STEP_SIZE = 30;
 
-        public Stage()
+        public Stage(Statistics statistics)
         {
             GameCanvas = new Canvas
             {
                 Background = Brushes.Black
             };
             _shapes = new List<DisplayObject>();
+            this.Statistics = statistics;
+            this.baseStatistics = new Statistics
+            {
+                DifficultyLevel = statistics.DifficultyLevel,
+                LivesCount = statistics.LivesCount,
+                Score = statistics.Score,
+            };
+            
+            InitMessageBlock();
+            DrawInitStatistics();
         }
 
         #region AddObjects
+
         public void AddRandomShapes(int count, int _maxX, int _maxY)
         {
-            Console.WriteLine(_maxX + " - " + _maxY);
+            this.SHAPES_COUNT = count;
             
+            InitMessageBlock();
+            DrawInitStatistics();
+            DrawStatistics(Statistics);
+
+            Console.WriteLine(_maxX + " - " + _maxY);
+
             addPlatform(_maxX, _maxY);
             addSpetialBall(_maxX, _maxY);
-            
+
             for (int i = 0; i < count; i++)
             {
                 var (R1, G1, B1) = GetRandomBrush();
@@ -46,37 +73,42 @@ namespace Arcanoid
                 int size = Random.Shared.Next(100, 150);
                 int posX, posY;
                 int iteration = 0;
+    
+                double Speed = (double)Random.Shared.Next(1, 3*Statistics.DifficultyLevel )/4; 
+                
                 do
                 {
-                    (posX,posY) = (Random.Shared.Next(_maxX), Random.Shared.Next(_maxY));
+                    (posX, posY) = (Random.Shared.Next(_maxX), Random.Shared.Next(_maxY));
                     iteration++;
                     if (iteration > 100_000)
                     {
                         Console.WriteLine("Less shapes or size");
                         break;
                     }
-                }
-                while (isPositionInValid(posX,posY,_maxX,_maxY,size));
-                
+                } while (isPositionInValid(posX, posY, _maxX, _maxY, size));
+
                 _shapes.Add(new CircleObject(
                     GameCanvas,
                     posX,
                     posY,
-                    new List<int>{size},
+                    new List<int> { size },
+                    Speed,
                     R1, G1, B1, R2, G2, B2,
                     false
-                    ));
+                ));
             }
         }
 
         private void addSpetialBall(int _maxX, int _maxY)
         {
+            
             _shapes.Add(new CircleObject(
                 GameCanvas,
-                _maxX/2 - 35,
-                _maxY-200,
-                new List<int>{70},
-                255,255,255,0,0,0,
+                _maxX / 2 - 35,
+                _maxY - 200,
+                new List<int> { 70 },
+                (double) Random.Shared.Next(1, 4*Statistics.DifficultyLevel) / 4,
+                255, 255, 255, 0, 0, 0,
                 true
             ));
         }
@@ -85,32 +117,35 @@ namespace Arcanoid
         {
             _shapes.Add(new Platform(
                 GameCanvas,
-                _maxX/2 - 200,
-                _maxY-50,
-                new List<int>{400,30},
-                255,255,255,0,0,0,
+                _maxX / 2 - 200,
+                _maxY - 50,
+                new List<int> { 400, 30 },
+                255, 255, 255, 0, 0, 0,
                 true
-                ));
+            ));
         }
-        
+
         private bool isPositionInValid(int posX, int posY, int _maxX, int _maxY, int size)
         {
             foreach (var shape in _shapes)
             {
                 double distance = Math.Sqrt(Math.Pow(shape.X - posX, 2) + Math.Pow(shape.Y - posY, 2));
 
-                if (distance < shape.Size[0] + shape.Size[0] || posX < 0 || posY < 0 || posX >= _maxX - 2*size || posY >= _maxY - 2*size)
+                if (distance < shape.Size[0] + shape.Size[0] || posX < 0 || posY < 0 || posX >= _maxX - 2 * size ||
+                    posY >= _maxY - 2 * size)
                 {
                     return true;
                 }
             }
-            
+
             return false;
         }
+
         #endregion
-        
-        public async void StartMovement(byte acc, double maxX, double maxY)
+
+        public async void StartMovement(byte acc, double maxX, double maxY, Statistics statistics)
         {
+            DrawMessage("");
             foreach (var shape in _shapes)
             {
                 shape.StartMovement(acc);
@@ -120,12 +155,12 @@ namespace Arcanoid
 
             while (_isRunning)
             {
-                var (delta, shapes) = CalculateNextCollision(maxX,maxY);
+                var (delta, shapes) = CalculateNextCollision(maxX, maxY);
 
                 Console.WriteLine(delta);
-                if(delta < EPSILON) delta = EPSILON;
+                if (delta < EPSILON) delta = EPSILON;
                 var time = (int)Math.Ceiling(delta);
-                
+
                 await Task.Delay(time);
                 DrawNextFrame(delta, shapes);
             }
@@ -135,25 +170,26 @@ namespace Arcanoid
             double time,
             List<(DisplayObject, DisplayObject?)> shapes)
         {
-            Dispatcher.UIThread.Invoke(()=>
+            Dispatcher.UIThread.Invoke(() =>
             {
                 foreach (var shape in _shapes)
                     MoveShape(shape, time);
             }, DispatcherPriority.Render);
 
-            foreach (var (shape1,shape2) in shapes)
+            foreach (var (shape1, shape2) in shapes)
             {
                 if (time < BASE_FPS) HandleCollision(shape1, shape2);
             }
-            
+
         }
 
         #region Collision
+
         private (double, List<(DisplayObject, DisplayObject?)>) CalculateNextCollision(double maxX, double maxY)
         {
             var shapes = new List<(DisplayObject, DisplayObject)>();
             double minTime = BASE_FPS;
-            
+
             for (int i = 0; i < _shapes.Count; i++)
             {
                 var shape = _shapes[i];
@@ -162,13 +198,13 @@ namespace Arcanoid
 
                 var distToLeft = shape.X;
                 var distToRight = maxX - (shape.X + shape.Size[0]);
-                
+
                 var distToTop = shape.Y;
                 var distToDown = maxY - (shape.Y + shape.Size[0]);
 
-                vx = vx > 0 ? vx : -vx; 
-                vy = vy > 0 ? vy : -vy; 
-                
+                vx = vx > 0 ? vx : -vx;
+                vy = vy > 0 ? vy : -vy;
+
                 var timeToLeft = distToLeft / vx;
                 var timeToRight = distToRight / vx;
                 var timeToTop = distToTop / vy;
@@ -183,32 +219,35 @@ namespace Arcanoid
                 if (timeHorizontal < minTime)
                 {
                     minTime = timeHorizontal;
-                }else if (timeVertical < minTime)
+                }
+                else if (timeVertical < minTime)
                 {
                     minTime = timeVertical;
-                }else if (timeVertical < EPSILON || timeHorizontal < EPSILON)
+                }
+                else if (timeVertical < EPSILON || timeHorizontal < EPSILON)
                 {
                     shapes.Add((shape, null));
                 }
-                
+
                 for (int j = i + 1; j < _shapes.Count; j++)
                 {
                     var shape1 = _shapes[i];
                     var shape2 = _shapes[j];
-                    
+
                     var res = CalculateNextCollisionForTwoShapes(shape1, shape2);
                     if (res < minTime)
                     {
                         minTime = res;
-                        shapes.Add((shape1,shape2));
-                    }else if (res < EPSILON)
+                        shapes.Add((shape1, shape2));
+                    }
+                    else if (res < EPSILON)
                     {
-                        shapes.Add((shape1,shape2));
+                        shapes.Add((shape1, shape2));
                     }
                 }
             }
 
-            return (minTime,shapes);
+            return (minTime, shapes);
         }
 
         private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)
@@ -237,12 +276,12 @@ namespace Arcanoid
                 double a = dvx * dvx + dvy * dvy;
                 double b = 2 * (dx * dvx + dy * dvy);
                 double c = dx * dx + dy * dy - radiusSum * radiusSum;
-                
-                double ov = Math.Sqrt(dx * dx + dy * dy) - (double)(shape1.Size[0] + shape2.Size[0])/ 2;
+
+                double ov = Math.Sqrt(dx * dx + dy * dy) - (double)(shape1.Size[0] + shape2.Size[0]) / 2;
 
                 if (ov < 0)
                     return 0.01;
-                
+
                 if (a == 0)
                     return BASE_FPS;
 
@@ -335,7 +374,7 @@ namespace Arcanoid
 
             return BASE_FPS;
         }
-        
+
         private void HandleCollision(DisplayObject shape11, DisplayObject shape2)
         {
             if (shape11 is CircleObject shape1)
@@ -343,10 +382,21 @@ namespace Arcanoid
                 shape1.HandleCollision(shape2);
                 if (shape1.isSpetialBall && shape2 is not null)
                 {
-                    Dispatcher.UIThread.Invoke(() =>
+                    Dispatcher.UIThread.Invoke(async () =>
                     {
+                        Statistics.Score += shape2.ScoreValue;
+                        DrawStatistics(Statistics);
                         _shapes.Remove(shape2);
                         GameCanvas.Children.Remove(shape2.Shape);
+
+                        if (_shapes.Count == 2) // Platform + spec ball
+                        {
+                            Statistics.Score += Statistics.DifficultyLevel++ * SCORE_FOR_LEVEL;
+                            StopMovement();
+                            await Task.Delay(2000);
+                            StartNewGame();
+                        }
+                        
                     }, DispatcherPriority.Render);
                 }
             }
@@ -356,9 +406,9 @@ namespace Arcanoid
                 shape2.HandleCollision(shape1Rect);
             }
         }
-        
+
         #endregion
-        
+
         public void StopMovement()
         {
             _isRunning = false;
@@ -371,6 +421,7 @@ namespace Arcanoid
         }
 
         #region ShapeData
+
         public List<ShapeData> GetShapesData()
         {
             var shapesData = new List<ShapeData>();
@@ -394,6 +445,7 @@ namespace Arcanoid
                 };
                 shapesData.Add(data);
             }
+
             return shapesData;
         }
 
@@ -419,11 +471,10 @@ namespace Arcanoid
                 switch (data.ShapeType)
                 {
                     case "CircleObject":
-                        shape = new CircleObject(GameCanvas,800,800,data.Size,r1,g1,b1,r2,g2,b2,false)
+                        shape = new CircleObject(GameCanvas, 800, 800, data.Size,data.Speed, r1, g1, b1, r2, g2, b2, false)
                         {
                             X = data.X,
                             Y = data.Y,
-                            Speed = data.Speed,
                             AngleSpeed = data.AngleSpeed,
                             Acceleration = data.Acceleration
                         };
@@ -472,9 +523,10 @@ namespace Arcanoid
                 }
             }
         }
+
         #endregion
 
-        public void MoveShape(DisplayObject shape, double dt)
+        public async void MoveShape(DisplayObject shape, double dt)
         {
             if (shape is Platform) return;
             double speedX = shape.Speed * Math.Cos(shape.AngleSpeed);
@@ -484,8 +536,8 @@ namespace Arcanoid
             double accelerationY = shape.Acceleration * Math.Sin(shape.AngleAcceleration);
 
             var time = dt;
-            shape.X += speedX*time;
-            shape.Y += speedY*time;
+            shape.X += speedX * time;
+            shape.Y += speedY * time;
 
             speedX += accelerationX;
             speedY += accelerationY;
@@ -496,10 +548,11 @@ namespace Arcanoid
 
             if (shape.X <= 0 || shape.X >= shape.Canvas.Bounds.Width - shape.Shape.Width)
             {
-                shape.AngleSpeed = Math.PI - shape.AngleSpeed; 
+                shape.AngleSpeed = Math.PI - shape.AngleSpeed;
                 shape.X = Math.Max(0, Math.Min(shape.X, shape.Canvas.Bounds.Width - shape.Shape.Width));
                 //Speed *= 0.95;
             }
+
             if (shape.Y <= 0 || shape.Y >= shape.Canvas.Bounds.Height - shape.Shape.Height)
             {
                 shape.AngleSpeed = -shape.AngleSpeed;
@@ -510,8 +563,28 @@ namespace Arcanoid
             if (shape.Y >= shape.Canvas.Bounds.Height - shape.Shape.Height && shape.isSpetial)
             {
                 StopMovement();
+                DrawMessage("Enter Space to continue");
+                
+                if (Statistics.LivesCount == MIN_LIVES)
+                {
+                    DrawMessage("GAME OVER");
+                    await Task.Delay(2000);
+                    
+                    Statistics = new Statistics
+                    {
+                        DifficultyLevel = baseStatistics.DifficultyLevel,
+                        LivesCount = baseStatistics.LivesCount,
+                        Score = baseStatistics.Score,
+                    };
+                    
+                    StartNewGame();
+                    return;
+                }
+                
+                Statistics.LivesCount--;
+                DrawStatistics(Statistics);
             }
-            
+
             shape.Draw();
         }
 
@@ -530,16 +603,72 @@ namespace Arcanoid
                 platform.X = GameCanvas.Bounds.Width - platform.Shape.Width;
                 step = 0;
             }
+
             platform.X += direction ? step : -step;
             platform.Draw();
+        }
+
+        public void DrawInitStatistics()
+        {
+            this._statistics = new TextBlock
+            {
+                Foreground = Brushes.White,
+                FontSize = 14,
+                TextWrapping = TextWrapping.Wrap,
+                Width = 100,
+                Height = 400,
+            };
+
+            GameCanvas.Children.Add(_statistics);
+        }
+
+        public void DrawStatistics(Statistics statistics)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                _statistics.Text =
+                    $"Difficulty: {statistics.DifficultyLevel}\nLives: {statistics.LivesCount}\nScore: {statistics.Score}";
+
+                Canvas.SetRight(_statistics, 5);
+                Canvas.SetTop(_statistics, 5);
+            }, DispatcherPriority.Render);
+        }
+
+        public void InitMessageBlock()
+        {
+            _fullScreenMessage = new TextBlock
+            {
+                Foreground = Brushes.White,
+                FontSize = 64,
+                TextWrapping = TextWrapping.Wrap,
+            };
+
+            GameCanvas.Children.Add(_fullScreenMessage);
+        }
+
+        public void DrawMessage(string message)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                this._fullScreenMessage.Text = message;
+
+                Canvas.SetLeft(_fullScreenMessage, 5 );
+                Canvas.SetTop(_fullScreenMessage,  5 );
+            }, DispatcherPriority.Render);
+        }
+
+        public void StartNewGame()
+        {
+            ClearCanvas();
+            AddRandomShapes(SHAPES_COUNT, (int) GameCanvas.Bounds.Width, (int) GameCanvas.Bounds.Height);
         }
         
         public static (byte,byte,byte) GetRandomBrush()
         {
             Random rand = new Random();
-            byte r = (byte)rand.Next(250);
-            byte g = (byte)rand.Next(250);
-            byte b = (byte)rand.Next(250);
+            byte r = (byte)rand.Next(10,250);
+            byte g = (byte)rand.Next(10,250);
+            byte b = (byte)rand.Next(10,250);
 
             return (r,g,b);
         }
