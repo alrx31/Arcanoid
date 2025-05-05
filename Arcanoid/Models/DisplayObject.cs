@@ -21,6 +21,7 @@ public abstract class DisplayObject
     public byte r1,g1,b1,r2,g2,b2;
     public List<int> Size { get; set; }
     public int ScoreValue { get; set; }
+    public bool shouldSkip {get; set;}
 
     public DisplayObject(Canvas canvas, int X, int Y, bool isSpetial,double speed)
     {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Arcanoid.Models;
 using Arcanoid.Special;
@@ -74,7 +75,7 @@ namespace Arcanoid
                 int posX, posY;
                 int iteration = 0;
     
-                double Speed = (double)Random.Shared.Next(1, 3*Statistics.DifficultyLevel )/4; 
+                double Speed = (double)Random.Shared.Next(1, 3*Statistics.DifficultyLevel^2 / 2 )/4; 
                 
                 do
                 {
@@ -107,7 +108,7 @@ namespace Arcanoid
                 _maxX / 2 - 35,
                 _maxY - 200,
                 new List<int> { 70 },
-                (double) Random.Shared.Next(1, 4*Statistics.DifficultyLevel) / 4,
+                (double) Random.Shared.Next(2, 4*Statistics.DifficultyLevel^2/2) / 4,
                 255, 255, 255, 0, 0, 0,
                 true
             ));
@@ -157,7 +158,7 @@ namespace Arcanoid
             {
                 var (delta, shapes) = CalculateNextCollision(maxX, maxY);
 
-                Console.WriteLine(delta);
+                //Console.WriteLine(delta);
                 if (delta < EPSILON) delta = EPSILON;
                 var time = (int)Math.Ceiling(delta);
 
@@ -172,8 +173,12 @@ namespace Arcanoid
         {
             Dispatcher.UIThread.Invoke(() =>
             {
-                foreach (var shape in _shapes)
-                    MoveShape(shape, time);
+                var shapesCopy = new List<DisplayObject>(_shapes);
+                foreach (var shape in shapesCopy)
+                {
+                    if (shape != null)
+                        MoveShape(shape, time);
+                }
             }, DispatcherPriority.Render);
 
             foreach (var (shape1, shape2) in shapes)
@@ -193,6 +198,7 @@ namespace Arcanoid
             for (int i = 0; i < _shapes.Count; i++)
             {
                 var shape = _shapes[i];
+                if(shape.shouldSkip) continue;
                 double vx = shape.Speed * Math.Cos(shape.AngleSpeed);
                 double vy = shape.Speed * Math.Sin(shape.AngleSpeed);
 
@@ -233,7 +239,8 @@ namespace Arcanoid
                 {
                     var shape1 = _shapes[i];
                     var shape2 = _shapes[j];
-
+                    if(shape2.shouldSkip) continue;
+                    
                     var res = CalculateNextCollisionForTwoShapes(shape1, shape2);
                     if (res < minTime)
                     {
@@ -361,11 +368,7 @@ namespace Arcanoid
                 var entryTime = Math.Max(txEntry, tyEntry);
                 var exitTime = Math.Min(txExit, tyExit);
 
-                if (entryTime > exitTime || (txEntry < 0 && tyEntry < 0))
-                {
-                    Console.WriteLine("No collision.");
-                }
-                else
+                if (!(entryTime > exitTime) && (!(txEntry < 0) || !(tyEntry < 0)))
                 {
                     return entryTime;
                 }
@@ -388,8 +391,10 @@ namespace Arcanoid
                         DrawStatistics(Statistics);
                         _shapes.Remove(shape2);
                         GameCanvas.Children.Remove(shape2.Shape);
-
-                        if (_shapes.Count == 2) // Platform + spec ball
+                        
+                        AddTextBox(shape2.ScoreValue.ToString(), shape2.X - (double)shape2.Size[0] / 2 , shape2.Y - (double)shape2.Size[0] / 2);
+                        
+                        if (_shapes.Count(x => !x.isSpetial) == 0) // Platform + spec ball + all text boxes
                         {
                             Statistics.Score += Statistics.DifficultyLevel++ * SCORE_FOR_LEVEL;
                             StopMovement();
@@ -545,6 +550,7 @@ namespace Arcanoid
             shape.Speed = Math.Sqrt(speedX * speedX + speedY * speedY);
 
             shape.AngleSpeed = Math.Atan2(speedY, speedX);
+            
 
             if (shape.X <= 0 || shape.X >= shape.Canvas.Bounds.Width - shape.Shape.Width)
             {
@@ -562,27 +568,39 @@ namespace Arcanoid
 
             if (shape.Y >= shape.Canvas.Bounds.Height - shape.Shape.Height && shape.isSpetial)
             {
-                StopMovement();
-                DrawMessage("Enter Space to continue");
-                
-                if (Statistics.LivesCount == MIN_LIVES)
+                if (shape is CircleObject)
                 {
-                    DrawMessage("GAME OVER");
-                    await Task.Delay(2000);
-                    
-                    Statistics = new Statistics
-                    {
-                        DifficultyLevel = baseStatistics.DifficultyLevel,
-                        LivesCount = baseStatistics.LivesCount,
-                        Score = baseStatistics.Score,
-                    };
-                    
-                    StartNewGame();
-                    return;
-                }
+                    StopMovement();
+                    DrawMessage("Enter Space to continue");
                 
-                Statistics.LivesCount--;
-                DrawStatistics(Statistics);
+                    if (Statistics.LivesCount == MIN_LIVES)
+                    {
+                        DrawMessage("GAME OVER");
+                        await Task.Delay(2000);
+                    
+                        Statistics = new Statistics
+                        {
+                            DifficultyLevel = baseStatistics.DifficultyLevel,
+                            LivesCount = baseStatistics.LivesCount,
+                            Score = baseStatistics.Score,
+                        };
+                    
+                        StartNewGame();
+                        return;
+                    }
+                
+                    Statistics.LivesCount--;
+                    DrawStatistics(Statistics);
+                }
+
+                if (shape is TextObject shape2)
+                {
+                    Dispatcher.UIThread.Invoke(async () =>
+                    {
+                        _shapes.Remove(shape2);
+                        GameCanvas.Children.Remove(shape2.TextBlock);
+                    }, DispatcherPriority.Render);
+                }
             }
 
             shape.Draw();
@@ -608,6 +626,29 @@ namespace Arcanoid
             platform.Draw();
         }
 
+        #region Text
+        private void AddTextBox(string text, double X, double Y)
+        {
+            var box = new TextObject(
+                GameCanvas,
+                (int) X,
+                (int) Y,
+                true,
+                1,
+                text
+            )
+            {
+                AngleSpeed = Double.Pi/2,
+                Size = new List<int>{100},
+                shouldSkip = false
+            };
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                _shapes.Add(box);
+                GameCanvas.Children.Add(box.TextBlock);
+            });
+        }
+        
         public void DrawInitStatistics()
         {
             this._statistics = new TextBlock
@@ -657,6 +698,8 @@ namespace Arcanoid
             }, DispatcherPriority.Render);
         }
 
+        #endregion
+        
         public void StartNewGame()
         {
             ClearCanvas();

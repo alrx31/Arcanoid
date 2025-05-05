@@ -40,8 +40,8 @@ namespace Arcanoid
             _mainWindow = window;
             
             _mainWindow.WindowState = WindowState.FullScreen;
-            _mainWindow.Width = 1920;
-            _mainWindow.Height = 1200;
+            _mainWindow.Width = 2560;
+            _mainWindow.Height = 1600;
 
             var border = new Border
             {
