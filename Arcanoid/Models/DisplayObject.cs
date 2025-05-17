@@ -22,11 +22,13 @@ public abstract class DisplayObject
     public List<int> Size { get; set; }
     public int ScoreValue { get; set; }
     public bool shouldSkip {get; set;}
+    public BaseBonusObject BaseBonusObject { get; set; }
 
-    public DisplayObject(Canvas canvas, int X, int Y, bool isSpetial,double speed)
+    public DisplayObject(Canvas canvas, int X, int Y, bool isSpetial,double speed, BaseBonusObject baseBonusObj)
     {
         this.isSpetial = isSpetial;
         this.Canvas = canvas;
+        this.BaseBonusObject = baseBonusObj;
 
         var rand = new Random();
 
@@ -35,7 +37,7 @@ public abstract class DisplayObject
         Speed = speed;                            
         AngleSpeed = rand.NextDouble() * 2 * Math.PI;
         AngleAcceleration = rand.NextDouble() * 2 * Math.PI;
-        ScoreValue = rand.Next(1, 100);
+        ScoreValue = 100;
     }
     
     public void StartMovement(double acceleration)

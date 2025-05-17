@@ -22,12 +22,13 @@ public class CircleObject : DisplayObject
         byte R2,
         byte G2,
         byte B2,
-        bool isSpetialBall
+        bool isSpetialBall, BaseBonusObject baseBonusObj
         ) : base(canvas,
         _maxX,
         _maxY,
         isSpetialBall,
-        speed
+        speed,  
+        baseBonusObj
         )
     {
         this.isSpetialBall = isSpetialBall;
@@ -57,8 +58,8 @@ public class CircleObject : DisplayObject
     {
         if (this is CircleObject shape1 && other is CircleObject shape2)
         {
-            double mass1 = 1;//shape1.Size[0];
-            double mass2 = 1;//shape2.Size[0];
+            double mass1 = shape1.Size[0];
+            double mass2 = shape2.Size[0];
                 
             double v1x = shape1.Speed * Math.Cos(shape1.AngleSpeed);
             double v1y = shape1.Speed * Math.Sin(shape1.AngleSpeed);
@@ -136,7 +137,6 @@ public class CircleObject : DisplayObject
             double newAngle = -Math.Abs(this.AngleSpeed) + angleVariation; 
             this.AngleSpeed = newAngle;
         }
-
     }
 
     public override void Draw()

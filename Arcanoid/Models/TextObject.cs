@@ -20,7 +20,7 @@ public class TextObject : DisplayObject
         X,
         Y,
         isSpetial,
-        speed)
+        speed, null)
     {
         TextBlock = new TextBlock
         {

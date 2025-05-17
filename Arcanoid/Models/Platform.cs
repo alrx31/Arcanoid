@@ -28,7 +28,8 @@ public class Platform : RectangleObject
         R2,
         G2,
         B2,
-        isSpetial)
+        isSpetial
+        , null)
     {
         
     }

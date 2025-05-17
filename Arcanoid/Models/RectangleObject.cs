@@ -20,12 +20,14 @@ namespace Arcanoid.Models
             byte R2,
             byte G2,
             byte B2,
-            bool isSpetial
+            bool isSpetial,
+            BaseBonusObject baseBonusObj
             ) : base(canvas,
             _maxX,
             _maxY,
             isSpetial,
-            speed
+            speed,
+            baseBonusObj
             )
         {
             this.Size = size;

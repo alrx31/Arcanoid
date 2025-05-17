@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Arcanoid.Models;
+using Arcanoid.Models.Bonuses;
 using Arcanoid.Special;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -31,6 +32,10 @@ namespace Arcanoid
         private readonly double BASE_FPS = 16; // in ms
         private readonly double EPSILON = 1; // expected calc error
         private readonly double PLATFORM_STEP_SIZE = 30;
+        
+        // Bonuses
+        private readonly double BONUS_CHANCE_VALUE = 1;
+        private readonly int BONUSES_COUNT = 4;
 
         public Stage(Statistics statistics)
         {
@@ -75,7 +80,7 @@ namespace Arcanoid
                 int posX, posY;
                 int iteration = 0;
     
-                double Speed = (double)Random.Shared.Next(1, 3*Statistics.DifficultyLevel^2 / 2 )/4; 
+                double Speed = (double)Random.Shared.Next(1, 3+Statistics.DifficultyLevel^2 / 4 )/4; 
                 
                 do
                 {
@@ -88,6 +93,8 @@ namespace Arcanoid
                     }
                 } while (isPositionInValid(posX, posY, _maxX, _maxY, size));
 
+                BaseBonusObject baseBonus = addBonus();
+                
                 _shapes.Add(new CircleObject(
                     GameCanvas,
                     posX,
@@ -95,7 +102,8 @@ namespace Arcanoid
                     new List<int> { size },
                     Speed,
                     R1, G1, B1, R2, G2, B2,
-                    false
+                    false,
+                    baseBonus
                 ));
             }
         }
@@ -108,9 +116,10 @@ namespace Arcanoid
                 _maxX / 2 - 35,
                 _maxY - 200,
                 new List<int> { 70 },
-                (double) Random.Shared.Next(2, 4*Statistics.DifficultyLevel^2/2) / 4,
+                (double) Random.Shared.Next(2, 8 + (Statistics.DifficultyLevel^2) / 5) / 4,
                 255, 255, 255, 0, 0, 0,
-                true
+                true,
+                null
             ));
         }
 
@@ -119,7 +128,7 @@ namespace Arcanoid
             _shapes.Add(new Platform(
                 GameCanvas,
                 _maxX / 2 - 200,
-                _maxY - 50,
+                _maxY - 40,
                 new List<int> { 400, 30 },
                 255, 255, 255, 0, 0, 0,
                 true
@@ -142,6 +151,92 @@ namespace Arcanoid
             return false;
         }
 
+        private BaseBonusObject addBonus()
+        {
+            if (Random.Shared.NextDouble() < BONUS_CHANCE_VALUE)
+            {
+                var res = Random.Shared.Next(1,BONUSES_COUNT);
+
+                return res switch
+                {
+                    1 => new ChangePlatformSizeBaseBonus(
+                            GameCanvas,
+                            0,
+                            0,
+                            0.8,
+                            50,
+                            0,
+                            50,
+                            200,
+                            100,
+                            100,
+                            100,
+                            ApplyChangePlatformSize,
+                            RemoveChangePlatformSize
+                        )
+                        {
+                            AngleSpeed = double.Pi/2
+                        },
+                    2 => new ChangePlatformSizeBaseBonus(
+                            GameCanvas,
+                            0,
+                            0,
+                            0.8,
+                            100,
+                            0,
+                            50,
+                            200,
+                            100,
+                            100,
+                            100,
+                            ApplyChangePlatformSize,
+                            RemoveChangePlatformSize
+                        )
+                        {
+                            AngleSpeed = double.Pi/2
+                        },
+                    3 => new ChangePlatformSizeBaseBonus(
+                            GameCanvas,
+                            0,
+                            0,
+                            0.8,
+                            -50,
+                            0,
+                            50,
+                            200,
+                            255,
+                            0,
+                            0,
+                            ApplyChangePlatformSize,
+                            RemoveChangePlatformSize
+                        )
+                        {
+                            AngleSpeed = double.Pi/2
+                        },
+                    4 => new ChangePlatformSizeBaseBonus(
+                            GameCanvas,
+                            0,
+                            0,
+                            0.8,
+                            -100,
+                            0,
+                            50,
+                            200,
+                            255,
+                            0,
+                            0,
+                            ApplyChangePlatformSize,
+                            RemoveChangePlatformSize
+                        )
+                        {
+                            AngleSpeed = double.Pi/2
+                        }
+                };
+            }
+
+            return null;
+        }
+        
         #endregion
 
         public async void StartMovement(byte acc, double maxX, double maxY, Statistics statistics)
@@ -239,7 +334,10 @@ namespace Arcanoid
                 {
                     var shape1 = _shapes[i];
                     var shape2 = _shapes[j];
-                    if(shape2.shouldSkip) continue;
+                    if (!(shape1 is Platform && shape2 is BaseBonusObject))
+                    {
+                        if(shape2.shouldSkip) continue;
+                    }
                     
                     var res = CalculateNextCollisionForTwoShapes(shape1, shape2);
                     if (res < minTime)
@@ -374,6 +472,74 @@ namespace Arcanoid
                 }
             }
 
+            if (shape1 is RectangleObject rect1 && shape2 is BaseBonusObject rect2)
+            {
+                double r1Left = rect1.X;
+                double r1Top = rect1.Y;
+                double r1Right = rect1.X + rect1.Size[0];
+                double r1Bottom = rect1.Y + rect1.Size[1];
+
+                double r2Left = rect2.X;
+                double r2Top = rect2.Y;
+                double r2Right = rect2.X + rect2.Size[0];
+                double r2Bottom = rect2.Y + rect2.Size[1];
+
+                double r1SpeedX = rect1.Speed * Math.Cos(rect1.AngleSpeed);
+                double r1SpeedY = rect1.Speed * Math.Sin(rect1.AngleSpeed);
+                double r2SpeedX = rect2.Speed * Math.Cos(rect2.AngleSpeed);
+                double r2SpeedY = rect2.Speed * Math.Sin(rect2.AngleSpeed);
+
+                double dvx = r1SpeedX - r2SpeedX;
+                double dvy = r1SpeedY - r2SpeedY;
+
+                double txEntry, txExit;
+                if (dvx > 0)
+                {
+                    txEntry = (r2Left - r1Right) / dvx;
+                    txExit = (r2Right - r1Left) / dvx;
+                }
+                else if (dvx < 0)
+                {
+                    txEntry = (r2Right - r1Left) / dvx;
+                    txExit = (r2Left - r1Right) / dvx;
+                }
+                else
+                {
+                    txEntry = double.NegativeInfinity;
+                    txExit = double.PositiveInfinity;
+                }
+
+                double tyEntry, tyExit;
+                if (dvy > 0)
+                {
+                    tyEntry = (r2Top - r1Bottom) / dvy;
+                    tyExit = (r2Bottom - r1Top) / dvy;
+                }
+                else if (dvy < 0)
+                {
+                    tyEntry = (r2Bottom - r1Top) / dvy;
+                    tyExit = (r2Top - r1Bottom) / dvy;
+                }
+                else
+                {
+                    tyEntry = double.NegativeInfinity;
+                    tyExit = double.PositiveInfinity;
+                }
+
+                double entryTime = Math.Max(txEntry, tyEntry);
+                double exitTime = Math.Min(txExit, tyExit);
+
+                if (entryTime < exitTime && (txEntry >= 0 || tyEntry >= 0) && entryTime >= 0)
+                {
+                    return entryTime;
+                }
+
+                bool isOverlapping = !(r1Right < r2Left || r1Left > r2Right || r1Bottom < r2Top || r1Top > r2Bottom);
+                if (isOverlapping)
+                {
+                    return 0.01;
+                }
+            }
 
             return BASE_FPS;
         }
@@ -389,12 +555,17 @@ namespace Arcanoid
                     {
                         Statistics.Score += shape2.ScoreValue;
                         DrawStatistics(Statistics);
+                        var bonus = shape2.BaseBonusObject;
+                        bonus.X = shape2.X;
+                        bonus.Y = shape2.Y;
+                        
                         _shapes.Remove(shape2);
                         GameCanvas.Children.Remove(shape2.Shape);
                         
                         AddTextBox(shape2.ScoreValue.ToString(), shape2.X - (double)shape2.Size[0] / 2 , shape2.Y - (double)shape2.Size[0] / 2);
+                        AddBonusObject(bonus);
                         
-                        if (_shapes.Count(x => !x.isSpetial) == 0) // Platform + spec ball + all text boxes
+                        if (_shapes.Count(x => !x.isSpetial) == 0) // Platform + spec ball + all text boxes + all bonuses
                         {
                             Statistics.Score += Statistics.DifficultyLevel++ * SCORE_FOR_LEVEL;
                             StopMovement();
@@ -405,10 +576,19 @@ namespace Arcanoid
                     }, DispatcherPriority.Render);
                 }
             }
-
+            
             if (shape11 is RectangleObject shape1Rect)
             {
                 shape2.HandleCollision(shape1Rect);
+
+                if (shape2 is BaseBonusObject shape22)
+                {
+                    Dispatcher.UIThread.Invoke(() =>
+                    {
+                        _shapes.Remove(shape2);
+                        GameCanvas.Children.Remove(shape2.Shape);
+                    }, DispatcherPriority.Render);
+                }
             }
         }
 
@@ -476,7 +656,7 @@ namespace Arcanoid
                 switch (data.ShapeType)
                 {
                     case "CircleObject":
-                        shape = new CircleObject(GameCanvas, 800, 800, data.Size,data.Speed, r1, g1, b1, r2, g2, b2, false)
+                        shape = new CircleObject(GameCanvas, 800, 800, data.Size,data.Speed, r1, g1, b1, r2, g2, b2, false, null)
                         {
                             X = data.X,
                             Y = data.Y,
@@ -575,7 +755,7 @@ namespace Arcanoid
                 
                     if (Statistics.LivesCount == MIN_LIVES)
                     {
-                        DrawMessage("GAME OVER");
+                        DrawMessage($"GAME OVER, SCORE {Statistics.Score}");
                         await Task.Delay(2000);
                     
                         Statistics = new Statistics
@@ -599,6 +779,15 @@ namespace Arcanoid
                     {
                         _shapes.Remove(shape2);
                         GameCanvas.Children.Remove(shape2.TextBlock);
+                    }, DispatcherPriority.Render);
+                }
+
+                if (shape is BaseBonusObject shape3)
+                {
+                    Dispatcher.UIThread.Invoke(async () =>
+                    {
+                        _shapes.Remove(shape3);
+                        GameCanvas.Children.Remove(shape3.Shape);
                     }, DispatcherPriority.Render);
                 }
             }
@@ -700,6 +889,34 @@ namespace Arcanoid
 
         #endregion
         
+        #region Bonus
+
+        private void AddBonusObject(BaseBonusObject baseBonus)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                _shapes.Add(baseBonus);
+                GameCanvas.Children.Add(baseBonus.Shape);
+            });
+        }
+
+        private void ApplyChangePlatformSize(double value)
+        {
+            _shapes[0].Shape.Width += value;
+            _shapes[0].Size[0] += (int)value;
+            _shapes[0].X -= value / 2;
+            _shapes[0].Draw();
+        }
+
+        private void RemoveChangePlatformSize(double value)
+        {
+            _shapes[0].Shape.Width -= value;
+            _shapes[0].Size[0] -= (int)value;
+            _shapes[0].X += value / 2;
+            _shapes[0].Draw();
+        }
+        
+        #endregion
         public void StartNewGame()
         {
             ClearCanvas();

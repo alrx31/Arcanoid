@@ -33,15 +33,15 @@ namespace Arcanoid
         
         private int SHAPES_COUNT = 10;
         private readonly int START_LIVES_COUNT = 3;
-        private readonly int START_DIFFICULTY_LEVEL = 1; // should be greet than 0
+        private readonly int START_DIFFICULTY_LEVEL = 3; // should be greet than 0
         
         public Game(Window window)
         {
             _mainWindow = window;
             
             _mainWindow.WindowState = WindowState.FullScreen;
-            _mainWindow.Width = 2560;
-            _mainWindow.Height = 1600;
+            _mainWindow.Width = 2298; //2298 - 1429
+            _mainWindow.Height = 1429;
 
             var border = new Border
             {
