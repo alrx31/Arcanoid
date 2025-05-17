@@ -33,7 +33,7 @@ namespace Arcanoid
         
         private int SHAPES_COUNT = 10;
         private readonly int START_LIVES_COUNT = 3;
-        private readonly int START_DIFFICULTY_LEVEL = 3; // should be greet than 0
+        private readonly int START_DIFFICULTY_LEVEL = 1; // should be greet than 0
         
         public Game(Window window)
         {

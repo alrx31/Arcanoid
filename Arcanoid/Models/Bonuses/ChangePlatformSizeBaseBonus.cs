@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 
 namespace Arcanoid.Models.Bonuses;
 
@@ -38,9 +40,15 @@ public class ChangePlatformSizeBaseBonus : BaseBonusObject
         {
             Width = 50,
             Height = 50,
-            Fill = new SolidColorBrush(Color.FromRgb(r1, g1, b1)),
+            Fill = new ImageBrush()
+            {
+                Source = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Arcanoid.Assets.PlatformResize.png")),
+                Stretch = Stretch.UniformToFill
+            },
             Stroke = new SolidColorBrush(Color.FromRgb(r2, g2, b2)),
-            StrokeThickness = 1
+            StrokeThickness = 1,
+            RadiusX = 25,
+            RadiusY = 25,
         };
     }
 }

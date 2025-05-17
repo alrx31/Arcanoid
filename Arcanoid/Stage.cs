@@ -28,9 +28,9 @@ namespace Arcanoid
         private int SHAPES_COUNT;
 
         private readonly int SCORE_FOR_LEVEL = 1000;
-        private readonly int MIN_LIVES = 0; // when stop
-        private readonly double BASE_FPS = 16; // in ms
-        private readonly double EPSILON = 1; // expected calc error
+        private readonly int MIN_LIVES = 0;                // when stop
+        private readonly double BASE_FPS = 16;             // in ms
+        private readonly double EPSILON = 1;               // expected calc error
         private readonly double PLATFORM_STEP_SIZE = 30;
         
         // Bonuses
@@ -355,7 +355,7 @@ namespace Arcanoid
             return (minTime, shapes);
         }
 
-        private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)
+        private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)   
         {
             if (shape1 is CircleObject && shape2 is CircleObject)
             {
