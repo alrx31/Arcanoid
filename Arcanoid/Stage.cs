@@ -36,7 +36,7 @@ namespace Arcanoid
         
         // Bonuses
         private readonly double BONUS_CHANCE_VALUE = 1;
-        private readonly int BONUSES_COUNT = 10;
+        private readonly int BONUSES_COUNT = 14;
 
         public Stage(Statistics statistics)
         {
@@ -72,40 +72,61 @@ namespace Arcanoid
             addPlatform(_maxX, _maxY);
             addSpetialBall(_maxX, _maxY);
 
-            for (int i = 0; i < count; i++)
+            AddNotSpecShapes(count, _maxX, _maxY);
+        }
+
+        private void AddNotSpecShapes(int count, int _maxX, int _maxY)
+        {
+            if (count > 0)
             {
-                var (R1, G1, B1) = GetRandomBrush();
-                var (R2, G2, B2) = GetRandomBrush();
-
-                int size = Random.Shared.Next(100, 150);
-                int posX, posY;
-                int iteration = 0;
-    
-                double Speed = (double)Random.Shared.Next(1, 3+Statistics.DifficultyLevel / 2 )/4; 
-                
-                do
+                for (int i = 0; i < count; i++)
                 {
-                    (posX, posY) = (Random.Shared.Next(_maxX), Random.Shared.Next(_maxY));
-                    iteration++;
-                    if (iteration > 100_000)
-                    {
-                        Console.WriteLine("Less shapes or size");
-                        break;
-                    }
-                } while (isPositionInValid(posX, posY, _maxX, _maxY, size));
+                    var (R1, G1, B1) = GetRandomBrush();
+                    var (R2, G2, B2) = GetRandomBrush();
 
-                BaseBonusObject baseBonus = addBonus();
+                    int size = Random.Shared.Next(100, 150);
+                    int posX, posY;
+                    int iteration = 0;
+    
+                    double Speed = (double)Random.Shared.Next(1, 3+Statistics.DifficultyLevel / 2 )/4; 
                 
-                _shapes.Add(new CircleObject(
-                    GameCanvas,
-                    posX,
-                    posY,
-                    new List<int> { size },
-                    Speed,
-                    R1, G1, B1, R2, G2, B2,
-                    false,
-                    baseBonus
-                ));
+                    do
+                    {
+                        (posX, posY) = (Random.Shared.Next(_maxX), Random.Shared.Next(_maxY));
+                        iteration++;
+                        if (iteration > 100_000)
+                        {
+                            Console.WriteLine("Less shapes or size");
+                            break;
+                        }
+                    } while (isPositionInValid(posX, posY, _maxX, _maxY, size));
+
+                    BaseBonusObject baseBonus = addBonus();
+                
+                    _shapes.Add(new CircleObject(
+                        GameCanvas,
+                        posX,
+                        posY,
+                        new List<int> { size },
+                        Speed,
+                        R1, G1, B1, R2, G2, B2,
+                        false,
+                        baseBonus
+                    ));
+                }
+            }
+            else
+            {
+                int j = 0;
+                foreach (var s in _shapes.ToList())
+                {
+                    if (j == count) break;
+                    if (!s.isSpetial && s is CircleObject)
+                    {
+                        RemoveNotSpecShape(s);
+                        j--;
+                    }
+                }
             }
         }
 
@@ -306,6 +327,66 @@ namespace Arcanoid
                         0,
                         ApplyChangeNotSpecBallSpeed,
                         RemoveChangeNotSpecBallSpeed
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    11 => new AddNotSpecBalls(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        -2,
+                        100,
+                        100,
+                        100,
+                        ApplyAddNotSpecBalls,
+                        RemoveAddNotSpecBalls
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    12 => new AddNotSpecBalls(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        -4,
+                        100,
+                        100,
+                        100,
+                        ApplyAddNotSpecBalls,
+                        RemoveAddNotSpecBalls
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    13 => new AddNotSpecBalls(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        2,
+                        255,
+                        0,
+                        0,
+                        ApplyAddNotSpecBalls,
+                        RemoveAddNotSpecBalls
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    14 => new AddNotSpecBalls(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        4,
+                        255,
+                        0,
+                        0,
+                        ApplyAddNotSpecBalls,
+                        RemoveAddNotSpecBalls
                     )
                     {
                         AngleSpeed = double.Pi/2
@@ -630,29 +711,7 @@ namespace Arcanoid
                 shape1.HandleCollision(shape2);
                 if (shape1.isSpetialBall && shape2 is not null)
                 {
-                    Dispatcher.UIThread.Invoke(async () =>
-                    {
-                        Statistics.Score += shape2.ScoreValue;
-                        DrawStatistics(Statistics);
-                        var bonus = shape2.BaseBonusObject;
-                        bonus.X = shape2.X;
-                        bonus.Y = shape2.Y;
-                        
-                        _shapes.Remove(shape2);
-                        GameCanvas.Children.Remove(shape2.Shape);
-                        
-                        AddTextBox(shape2.ScoreValue.ToString(), shape2.X - (double)shape2.Size[0] / 2 , shape2.Y - (double)shape2.Size[0] / 2);
-                        AddBonusObject(bonus);
-                        
-                        if (_shapes.Count(x => !x.isSpetial) == 0) // Platform + spec ball + all text boxes + all bonuses
-                        {
-                            Statistics.Score += Statistics.DifficultyLevel++ * SCORE_FOR_LEVEL;
-                            StopMovement();
-                            await Task.Delay(2000);
-                            StartNewGame();
-                        }
-                        
-                    }, DispatcherPriority.Render);
+                    RemoveNotSpecShape(shape2);
                 }
             }
             
@@ -669,6 +728,33 @@ namespace Arcanoid
                     }, DispatcherPriority.Render);
                 }
             }
+        }
+
+        private void RemoveNotSpecShape(DisplayObject shape)
+        {
+            Dispatcher.UIThread.Invoke(async () =>
+            {
+                Statistics.Score += shape.ScoreValue;
+                DrawStatistics(Statistics);
+                var bonus = shape.BaseBonusObject;
+                bonus.X = shape.X;
+                bonus.Y = shape.Y;
+                        
+                _shapes.Remove(shape);
+                GameCanvas.Children.Remove(shape.Shape);
+                        
+                AddTextBox(shape.ScoreValue.ToString(), shape.X - (double)shape.Size[0] / 2 , shape.Y - (double)shape.Size[0] / 2);
+                AddBonusObject(bonus);
+                        
+                if (_shapes.Count(x => !x.isSpetial) == 0) // Platform + spec ball + all text boxes + all bonuses
+                {
+                    Statistics.Score += Statistics.DifficultyLevel++ * SCORE_FOR_LEVEL;
+                    StopMovement();
+                    await Task.Delay(2000);
+                    StartNewGame();
+                }
+                        
+            }, DispatcherPriority.Render);
         }
 
         #endregion
@@ -1041,6 +1127,19 @@ namespace Arcanoid
                     }
                 }
             }, DispatcherPriority.Render);
+        }
+
+        private void ApplyAddNotSpecBalls(int count)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                AddNotSpecShapes(count, (int)GameCanvas.Bounds.Width, (int)GameCanvas.Bounds.Height);
+            }, DispatcherPriority.Render);
+        }
+        
+        private void RemoveAddNotSpecBalls(int count)
+        {
+            // not reset this bonus
         }
         #endregion
         public void StartNewGame()
