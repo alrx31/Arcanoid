@@ -6,6 +6,7 @@ using Arcanoid.Models;
 using Arcanoid.Models.Bonuses;
 using Arcanoid.Special;
 using Avalonia.Controls;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Media;
 using Avalonia.Threading;
 
@@ -35,7 +36,7 @@ namespace Arcanoid
         
         // Bonuses
         private readonly double BONUS_CHANCE_VALUE = 1;
-        private readonly int BONUSES_COUNT = 4;
+        private readonly int BONUSES_COUNT = 10;
 
         public Stage(Statistics statistics)
         {
@@ -80,7 +81,7 @@ namespace Arcanoid
                 int posX, posY;
                 int iteration = 0;
     
-                double Speed = (double)Random.Shared.Next(1, 3+Statistics.DifficultyLevel^2 / 4 )/4; 
+                double Speed = (double)Random.Shared.Next(1, 3+Statistics.DifficultyLevel / 2 )/4; 
                 
                 do
                 {
@@ -116,7 +117,7 @@ namespace Arcanoid
                 _maxX / 2 - 35,
                 _maxY - 200,
                 new List<int> { 70 },
-                (double) Random.Shared.Next(2, 8 + (Statistics.DifficultyLevel^2) / 5) / 4,
+                (double) Random.Shared.Next(2, 5 + (Statistics.DifficultyLevel) / 2) / 4,
                 255, 255, 255, 0, 0, 0,
                 true,
                 null
@@ -165,9 +166,6 @@ namespace Arcanoid
                             0,
                             0.8,
                             50,
-                            0,
-                            50,
-                            200,
                             100,
                             100,
                             100,
@@ -183,9 +181,6 @@ namespace Arcanoid
                             0,
                             0.8,
                             100,
-                            0,
-                            50,
-                            200,
                             100,
                             100,
                             100,
@@ -201,9 +196,6 @@ namespace Arcanoid
                             0,
                             0.8,
                             -50,
-                            0,
-                            50,
-                            200,
                             255,
                             0,
                             0,
@@ -219,9 +211,6 @@ namespace Arcanoid
                             0,
                             0.8,
                             -100,
-                            0,
-                            50,
-                            200,
                             255,
                             0,
                             0,
@@ -230,7 +219,97 @@ namespace Arcanoid
                         )
                         {
                             AngleSpeed = double.Pi/2
-                        }
+                        },
+                    5 => new ChangeSpecialBallSpeedBonus(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        4,
+                        255,
+                        0,
+                        0,
+                        ApplyChangeSpecialBallSpeed,
+                        RemoveChangeSpecialBallSpeed
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    6 => new ChangeSpecialBallSpeedBonus(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        0.25,
+                        100,
+                        100,
+                        100,
+                        ApplyChangeSpecialBallSpeed,
+                        RemoveChangeSpecialBallSpeed
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    7 => new ChangeNotSpecialBallSpeedBonus(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        0.25,
+                        100,
+                        100,
+                        100,
+                        ApplyChangeNotSpecBallSpeed,
+                        RemoveChangeNotSpecBallSpeed
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    8 => new ChangeNotSpecialBallSpeedBonus(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        0.125,
+                        100,
+                        100,
+                        100,
+                        ApplyChangeNotSpecBallSpeed,
+                        RemoveChangeNotSpecBallSpeed
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    9 => new ChangeNotSpecialBallSpeedBonus(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        4,
+                        255,
+                        0,
+                        0,
+                        ApplyChangeNotSpecBallSpeed,
+                        RemoveChangeNotSpecBallSpeed
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    },
+                    10 => new ChangeNotSpecialBallSpeedBonus(
+                        GameCanvas,
+                        0,
+                        0,
+                        0.8,
+                        8,
+                        255,
+                        0,
+                        0,
+                        ApplyChangeNotSpecBallSpeed,
+                        RemoveChangeNotSpecBallSpeed
+                    )
+                    {
+                        AngleSpeed = double.Pi/2
+                    }
                 };
             }
 
@@ -902,20 +981,67 @@ namespace Arcanoid
 
         private void ApplyChangePlatformSize(double value)
         {
-            _shapes[0].Shape.Width += value;
-            _shapes[0].Size[0] += (int)value;
-            _shapes[0].X -= value / 2;
-            _shapes[0].Draw();
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                _shapes[0].Shape.Width += value;
+                _shapes[0].Size[0] += (int)value;
+                _shapes[0].X -= value / 2;
+            }, DispatcherPriority.Render);
         }
 
         private void RemoveChangePlatformSize(double value)
         {
-            _shapes[0].Shape.Width -= value;
-            _shapes[0].Size[0] -= (int)value;
-            _shapes[0].X += value / 2;
-            _shapes[0].Draw();
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                _shapes[0].Shape.Width -= value;
+                _shapes[0].Size[0] -= (int)value;
+                _shapes[0].X += value / 2;
+            }, DispatcherPriority.Render);
+        }
+
+        private void ApplyChangeSpecialBallSpeed(double value)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                _shapes[1].Speed *= value;
+            }, DispatcherPriority.Render);
         }
         
+        private void RemoveChangeSpecialBallSpeed(double value)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                _shapes[1].Speed /= value;
+            }, DispatcherPriority.Render);
+        }
+
+        private void ApplyChangeNotSpecBallSpeed(double value)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                foreach (var shape in _shapes)
+                {
+                    if (!shape.isSpetial && shape is CircleObject)
+                    {
+                        shape.Speed *= value;
+                    }
+                }
+            }, DispatcherPriority.Render);
+        }
+
+        private void RemoveChangeNotSpecBallSpeed(double value)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                foreach (var shape in _shapes)
+                {
+                    if (!shape.isSpetial && shape is CircleObject)
+                    {
+                        shape.Speed /= value;
+                    }
+                }
+            }, DispatcherPriority.Render);
+        }
         #endregion
         public void StartNewGame()
         {

@@ -8,6 +8,8 @@ namespace Arcanoid.Models;
 
 public abstract class BaseBonusObject : DisplayObject
 {
+    private const int BONUS_DURATION = 10_000; // 10 sec bonus duration
+
     private readonly Action _applyAction;
     private readonly Action _removeAction;
     
@@ -29,7 +31,7 @@ public abstract class BaseBonusObject : DisplayObject
         if (other is Platform)
         {
             ApplyBonus();
-            await Task.Delay(10_000); // 10 sec bonus duration
+            await Task.Delay(BONUS_DURATION);
             RemoveBonus();
         }
         
