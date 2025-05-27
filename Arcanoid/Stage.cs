@@ -37,6 +37,8 @@ namespace Arcanoid
         // Bonuses
         private readonly double BONUS_CHANCE_VALUE = 1;
         private readonly int BONUSES_COUNT = 14;
+        
+        private readonly DispatcherTimer _timer;
 
         public Stage(Statistics statistics)
         {
@@ -55,7 +57,97 @@ namespace Arcanoid
             
             InitMessageBlock();
             DrawInitStatistics();
+            
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(5)
+            };
+            _timer.Tick += OnTimerTick;
         }
+        
+        private void OnTimerTick(object sender, EventArgs e)
+        {
+            for (var i = 0; i < _shapes.Count; i++)
+            {
+                var shape = _shapes[i];
+                CheckCollision(shape,i);
+                MoveShape(shape, 5);
+            }
+        }
+        
+        private void CheckCollision(DisplayObject shape,int idx)
+        {
+            for (int i = idx+1; i < _shapes.Count; i++)
+            {
+                if (IsColliding(_shapes[i], shape))
+                {
+                    //wq    StopMovement();
+                    HandleCollision(shape,_shapes[i]);
+                }
+            }
+        }
+        
+        private bool IsColliding(DisplayObject shape1, DisplayObject shape2)
+        {
+            // --- Круг – Круг ---
+            if (shape1 is CircleObject && shape2 is CircleObject)
+            {
+                double dx = (shape1.X + shape1.Size[0] / 2.0) - (shape2.X + shape2.Size[0] / 2.0);
+                double dy = (shape1.Y + shape1.Size[0] / 2.0) - (shape2.Y + shape2.Size[0] / 2.0);
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+
+                double radius1 = shape1.Size[0] / 2.0;
+                double radius2 = shape2.Size[0] / 2.0;
+
+                return distance <= radius1 + radius2;
+            }
+
+            // --- Круг – Прямоугольник ---
+            if ((shape1 is CircleObject && shape2 is RectangleObject) ||
+                (shape1 is RectangleObject && shape2 is CircleObject))
+            {
+                CircleObject circle = shape1 is CircleObject ? (CircleObject)shape1 : (CircleObject)shape2;
+                RectangleObject rect = shape1 is RectangleObject ? (RectangleObject)shape1 : (RectangleObject)shape2;
+
+                double circleX = circle.X + circle.Size[0] / 2.0;
+                double circleY = circle.Y + circle.Size[0] / 2.0;
+                double radius = circle.Size[0] / 2.0;
+
+                double rectLeft = rect.X;
+                double rectTop = rect.Y;
+                double rectRight = rect.X + rect.Size[0];
+                double rectBottom = rect.Y + rect.Size[1];
+
+                double closestX = Math.Max(rectLeft, Math.Min(circleX, rectRight));
+                double closestY = Math.Max(rectTop, Math.Min(circleY, rectBottom));
+
+                double dx = circleX - closestX;
+                double dy = circleY - closestY;
+
+                return (dx * dx + dy * dy) <= (radius * radius);
+            }
+
+            // --- Прямоугольник – Бонус (BaseBonusObject) ---
+            if (shape2 is RectangleObject rect1 && shape1 is BaseBonusObject rect2)
+            {
+                double r1Left = rect1.X;
+                double r1Top = rect1.Y;
+                double r1Right = rect1.X + rect1.Size[0];
+                double r1Bottom = rect1.Y + rect1.Size[1];
+
+                double r2Left = rect2.X;
+                double r2Top = rect2.Y;
+                double r2Right = rect2.X + rect2.Size[0];
+                double r2Bottom = rect2.Y + rect2.Size[1];
+
+                bool isOverlapping = !(r1Right < r2Left || r1Left > r2Right || r1Bottom < r2Top || r1Top > r2Bottom);
+                return isOverlapping;
+            }
+
+            return false;
+        }
+
+
 
         #region AddObjects
 
@@ -401,7 +493,7 @@ namespace Arcanoid
 
         public async void StartMovement(byte acc, double maxX, double maxY, Statistics statistics)
         {
-            DrawMessage("");
+            /*DrawMessage("");
             foreach (var shape in _shapes)
             {
                 shape.StartMovement(acc);
@@ -419,7 +511,12 @@ namespace Arcanoid
 
                 await Task.Delay(time);
                 DrawNextFrame(delta, shapes);
-            }
+            }*/
+                foreach (var shape in _shapes)
+                {
+                    shape.StartMovement(acc);
+                }
+                _timer.Start();
         }
 
         private void DrawNextFrame(
@@ -515,7 +612,7 @@ namespace Arcanoid
             return (minTime, shapes);
         }
 
-        private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)   
+        private double CalculateNextCollisionForTwoShapes(DisplayObject shape1, DisplayObject shape2)
         {
             if (shape1 is CircleObject && shape2 is CircleObject)
             {
@@ -761,6 +858,7 @@ namespace Arcanoid
 
         public void StopMovement()
         {
+            _timer.Stop();
             _isRunning = false;
         }
 
