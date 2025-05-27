@@ -98,10 +98,10 @@ public class CircleObject : DisplayObject
         v2y += (p2After - p2) * ny;
 
         // Обновление скорости и угла
-        shape1.Speed = Math.Sqrt(v1x * v1x + v1y * v1y);
+        //shape1.Speed = Math.Sqrt(v1x * v1x + v1y * v1y);
         shape1.AngleSpeed = Math.Atan2(v1y, v1x);
 
-        shape2.Speed = Math.Sqrt(v2x * v2x + v2y * v2y);
+        //shape2.Speed = Math.Sqrt(v2x * v2x + v2y * v2y);
         shape2.AngleSpeed = Math.Atan2(v2y, v2x);
 
         // Коррекция наложения (только немного, без "+1")

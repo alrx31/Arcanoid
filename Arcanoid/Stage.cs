@@ -35,7 +35,7 @@ namespace Arcanoid
         private readonly double PLATFORM_STEP_SIZE = 30;
         
         // Bonuses
-        private readonly double BONUS_CHANCE_VALUE = 1;
+        private readonly double BONUS_CHANCE_VALUE = .7;
         private readonly int BONUSES_COUNT = 14;
         
         private readonly DispatcherTimer _timer;
@@ -338,7 +338,7 @@ namespace Arcanoid
                         0,
                         0,
                         0.8,
-                        4,
+                        2,
                         255,
                         0,
                         0,
@@ -398,7 +398,7 @@ namespace Arcanoid
                         0,
                         0,
                         0.8,
-                        4,
+                        2,
                         255,
                         0,
                         0,
@@ -413,7 +413,7 @@ namespace Arcanoid
                         0,
                         0,
                         0.8,
-                        8,
+                        4,
                         255,
                         0,
                         0,
@@ -834,14 +834,18 @@ namespace Arcanoid
                 Statistics.Score += shape.ScoreValue;
                 DrawStatistics(Statistics);
                 var bonus = shape.BaseBonusObject;
-                bonus.X = shape.X;
-                bonus.Y = shape.Y;
-                        
+
+                if (bonus is not null)
+                {
+                    bonus.X = shape.X;
+                    bonus.Y = shape.Y;
+                    AddBonusObject(bonus);
+                }        
+                
                 _shapes.Remove(shape);
                 GameCanvas.Children.Remove(shape.Shape);
                         
                 AddTextBox(shape.ScoreValue.ToString(), shape.X - (double)shape.Size[0] / 2 , shape.Y - (double)shape.Size[0] / 2);
-                AddBonusObject(bonus);
                         
                 if (_shapes.Count(x => !x.isSpetial) == 0) // Platform + spec ball + all text boxes + all bonuses
                 {
@@ -1227,7 +1231,7 @@ namespace Arcanoid
             }, DispatcherPriority.Render);
         }
 
-        private void ApplyAddNotSpecBalls(int count)
+        public void ApplyAddNotSpecBalls(int count)
         {
             Dispatcher.UIThread.Invoke(() =>
             {

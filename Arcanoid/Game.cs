@@ -106,6 +106,10 @@ namespace Arcanoid
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Key == Key.T)
+            {
+                _stage.ApplyAddNotSpecBalls(-2);
+            }
             if (e.Key == Key.Right)
             {
                 _stage.MovePlatform(true);
