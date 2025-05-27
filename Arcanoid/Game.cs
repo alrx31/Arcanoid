@@ -31,9 +31,9 @@ namespace Arcanoid
         private bool _isRunWithAcceleration;
         private bool _isMenuOpen;
         
-        private int SHAPES_COUNT = 10;
-        private readonly int START_LIVES_COUNT = 3;
-        private readonly int START_DIFFICULTY_LEVEL = 1; // should be greet than 0
+        private int SHAPES_COUNT = 20;
+        private readonly int START_LIVES_COUNT = 5; // after 0 game overs
+        private readonly int START_DIFFICULTY_LEVEL = 1; // should be great than 0
         
         public Game(Window window)
         {
